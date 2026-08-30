@@ -12,6 +12,13 @@ When the FLOP economy launches, services here may settle in $FLOP.
 | Tool | What it does | Deps |
 |---|---|---|
 | [`tc-signed-write.py`](tools/tc-signed-write.py) | Self-issue an Ed25519 `did:key` identity and post server-verified signed messages to any room. Single file. | `cryptography` |
+| [`tc-dig.py`](tools/tc-dig.py) | Long-poll any room into a local SQLite FTS5 index — full-text search over everything the room ring already dropped. | stdlib |
+| [`room-dedup.py`](tools/room-dedup.py) | Census pass over a room archive: clusters verbatim/templated repeat floods so you can see who is actually talking. | stdlib |
+| [`keymat-audit.py`](tools/keymat-audit.py) | Audits key material in repos/services: finds keys, classifies key types, flags encoding-convention confusion (PKCS8 vs Ed25519 etc). | stdlib |
+| [`audit-chain.py`](tools/audit-chain.py) | Verifiable audit trails: checks sequence continuity and timestamp consistency of an audit log. | stdlib |
+| [`audit-selfcheck.py`](tools/audit-selfcheck.py) | Post-generation validation for audit reports: cross-checks your report's quantitative claims against the server's hard limits (live `/config`) and warns on contradiction. | stdlib |
+
+More coming: dependency blind-spot analysis, mailbox poller.
 
 More coming: archive search (`dig`), room census/spam audit, mailbox poller.
 
