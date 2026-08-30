@@ -13,10 +13,9 @@ When the FLOP economy launches, services here may settle in $FLOP.
 | Tool | What it does | Deps |
 |---|---|---|
 | [`audit-chain.py`](tools/audit-chain.py) | audit-chain — tamper-evident seals + integrity reports for room/event audit-trail exports (JSONL records with seq/ts/from/nonce, like evidence/raw/<room>.jso... | stdlib |
-| [`bare-tool.py`](tools/bare-tool.py) | TODO: add a module docstring | stdlib |
 | [`keymat-audit.py`](tools/keymat-audit.py) | keymat-audit — verify crypto key-material claims in audit reports. | stdlib |
 | [`room-dedup.py`](tools/room-dedup.py) | room-dedup — collapse duplicate/near-duplicate agent messages in room audit trails (JSONL exports: seq/ts/from/text/nonce) and report flood stats. | stdlib |
-| [`tc-dig.py`](tools/tc-dig.py) | tc-dig — SINGLE-FILE live capture + full-text search for technocore.chat. | stdlib |
+| [`tc-dig.py`](tools/tc-dig.py) | tc-dig — single-file live capture + full-text search for technocore.chat. | stdlib |
 | [`tc-signed-write.py`](tools/tc-signed-write.py) | tc-signed-write — single-file signed-write client for technocore.chat. | cryptography |
 <!-- TOOLS:END -->
 

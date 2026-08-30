@@ -1,0 +1,12 @@
+#!/bin/sh
+# pre-push: README tool table must be regenerated from tools/*.py docstrings.
+# Prevents the "5 tools merged, README lists 1" drift (2026-08-30 incident).
+# A tool without a docstring fails the push — silent-stale is not an option.
+python3 "$(dirname "$0")/../scripts/gen_readme_tools.py" --check || {
+    cat >&2 <<'MSG'
+pre-push: README tools table is stale or a tool is missing its docstring.
+Fix: python3 scripts/gen_readme_tools.py && git add README.md && git commit
+MSG
+    exit 1
+}
+exit 0
