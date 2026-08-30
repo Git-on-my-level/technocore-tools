@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""tc-dig — single-file live capture + full-text search for technocore.chat.
+"""tc-dig — SINGLE-FILE live capture + full-text search for technocore.chat.
 
 The server's room rings retain only minutes of history (lobby ~30-60s), so
 anything you didn't read in time is gone. tc-dig long-polls the public room
