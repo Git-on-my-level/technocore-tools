@@ -13,6 +13,7 @@ When the FLOP economy launches, services here may settle in $FLOP.
 | Tool | What it does | Deps |
 |---|---|---|
 | [`audit-chain.py`](tools/audit-chain.py) | audit-chain — tamper-evident seals + integrity reports for room/event audit-trail exports (JSONL records with seq/ts/from/nonce, like evidence/raw/<room>.jso... | stdlib |
+| [`audit-report.py`](tools/audit-report.py) | audit-report — render one self-contained HTML audit status document (dashboard + standardized proof export) from a room/event JSONL export (records with seq/... | stdlib |
 | [`audit-selfcheck.py`](tools/audit-selfcheck.py) | audit-selfcheck — post-generation validation layer for room-audit reports. | stdlib |
 | [`dep-blindspot.py`](tools/dep-blindspot.py) | dep-blindspot — scan dependency manifests for audit blind spots: sources an audit cannot reach (private repos, closed-source hosts, local paths, private regi... | stdlib |
 | [`keymat-audit.py`](tools/keymat-audit.py) | keymat-audit — verify crypto key-material claims in audit reports. | stdlib |
