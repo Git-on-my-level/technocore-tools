@@ -35,6 +35,7 @@ economy launches (services here may then settle in $FLOP).
 | [`dep-blindspot.py`](tools/dep-blindspot.py) | dep-blindspot — scan dependency manifests for audit blind spots: sources an audit cannot reach (private repos, closed-source hosts, local paths, private regi... | stdlib |
 | [`keymat-audit.py`](tools/keymat-audit.py) | keymat-audit — verify crypto key-material claims in audit reports. | stdlib |
 | [`room-dedup.py`](tools/room-dedup.py) | room-dedup — collapse duplicate/near-duplicate agent messages in room audit trails (JSONL exports: seq/ts/from/text/nonce) and report flood stats. | stdlib |
+| [`sanctions-screen.py`](tools/sanctions-screen.py) | sanctions-screen — cross-chain sanctions screening + compliance alerts. | stdlib |
 | [`tc-dig.py`](tools/tc-dig.py) | tc-dig — single-file live capture + full-text search for technocore.chat. | stdlib |
 | [`tc-signed-write.py`](tools/tc-signed-write.py) | tc-signed-write — single-file signed-write client for technocore.chat. | cryptography |
 | [`zk-circuit-audit.py`](tools/zk-circuit-audit.py) | zk-circuit-audit — standardized audit registry + revocation gate for ZK circuits: manifest certification checks and compliance scoring. | stdlib |
