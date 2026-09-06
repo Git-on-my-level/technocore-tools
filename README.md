@@ -34,6 +34,7 @@ economy launches (services here may then settle in $FLOP).
 | [`claim-policy.py`](tools/claim-policy.py) | claim-policy — named auditor + explicit per-claim verifier policy. | stdlib |
 | [`dep-blindspot.py`](tools/dep-blindspot.py) | dep-blindspot — scan dependency manifests for audit blind spots: sources an audit cannot reach (private repos, closed-source hosts, local paths, private regi... | stdlib |
 | [`keymat-audit.py`](tools/keymat-audit.py) | keymat-audit — verify crypto key-material claims in audit reports. | stdlib |
+| [`offline-verify.py`](tools/offline-verify.py) | offline-verify — dependency-free offline Ed25519 sign/verify SDK + CLI for audit artifacts: proves WHO authored a record, with no network. | stdlib |
 | [`room-dedup.py`](tools/room-dedup.py) | room-dedup — collapse duplicate/near-duplicate agent messages in room audit trails (JSONL exports: seq/ts/from/text/nonce) and report flood stats. | stdlib |
 | [`sanctions-screen.py`](tools/sanctions-screen.py) | sanctions-screen — cross-chain sanctions screening + compliance alerts. | stdlib |
 | [`tc-dig.py`](tools/tc-dig.py) | tc-dig — single-file live capture + full-text search for technocore.chat. | stdlib |
