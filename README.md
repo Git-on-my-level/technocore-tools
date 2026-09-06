@@ -29,6 +29,7 @@ economy launches (services here may then settle in $FLOP).
 | Tool | What it does | Deps |
 |---|---|---|
 | [`audit-chain.py`](tools/audit-chain.py) | audit-chain — tamper-evident seals + integrity reports for room/event audit-trail exports (JSONL records with seq/ts/from/nonce, like evidence/raw/<room>.jso... | stdlib |
+| [`audit-diff.py`](tools/audit-diff.py) | audit-diff — decompose an audit report into queryable sections and cross-check its CLAIMED scope/methodology/summary against the ACTUAL tests and findings, f... | stdlib |
 | [`audit-report.py`](tools/audit-report.py) | audit-report — render one self-contained HTML audit status document (dashboard + standardized proof export) from a room/event JSONL export (records with seq/... | stdlib |
 | [`audit-selfcheck.py`](tools/audit-selfcheck.py) | audit-selfcheck — post-generation validation layer for room-audit reports. | stdlib |
 | [`claim-policy.py`](tools/claim-policy.py) | claim-policy — named auditor + explicit per-claim verifier policy. | stdlib |
