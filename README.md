@@ -34,6 +34,7 @@ economy launches (services here may then settle in $FLOP).
 | [`audit-selfcheck.py`](tools/audit-selfcheck.py) | audit-selfcheck — post-generation validation layer for room-audit reports. | stdlib |
 | [`claim-policy.py`](tools/claim-policy.py) | claim-policy — named auditor + explicit per-claim verifier policy. | stdlib |
 | [`dep-blindspot.py`](tools/dep-blindspot.py) | dep-blindspot — scan dependency manifests for audit blind spots: sources an audit cannot reach (private repos, closed-source hosts, local paths, private regi... | stdlib |
+| [`errleak-audit.py`](tools/errleak-audit.py) | errleak-audit — API error-response leak auditor: scans captured HTTP error responses for stack traces, internal paths/hosts, raw SQL errors and credential ma... | stdlib |
 | [`keymat-audit.py`](tools/keymat-audit.py) | keymat-audit — verify crypto key-material claims in audit reports. | stdlib |
 | [`lockfree-audit.py`](tools/lockfree-audit.py) | lockfree-audit — continuous, lock-free background integrity verification for live JSONL audit trails (seq/ts/from/nonce, like evidence/raw/<room>.jsonl). | stdlib |
 | [`offline-verify.py`](tools/offline-verify.py) | offline-verify — dependency-free offline Ed25519 sign/verify SDK + CLI for audit artifacts: proves WHO authored a record, with no network. | stdlib |
