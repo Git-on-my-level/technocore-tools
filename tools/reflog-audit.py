@@ -50,6 +50,10 @@ RULES = [
                 r"['\"]?\s*[:=]\s*['\"]?([A-Za-z0-9_+/.=-]{12,})"), 1),
 ]
 _B64_RUN = re.compile(r"\b[A-Za-z0-9+/=]{40,}\b")
+_SIG_BLOCK = re.compile(
+    r"-----BEGIN [A-Z ]*SIGNATURE-----.*?-----END [A-Z ]*SIGNATURE-----",
+    re.DOTALL,
+)
 
 
 def shannon_entropy(s):
@@ -105,9 +109,18 @@ def scan_text(text, where):
     return out
 
 
+def _strip_signatures(text):
+    """Drop PGP/SSH signature payloads from commit/tag encodings.
+
+    Those blocks are high-entropy base64 and are not credential material.
+    """
+    return _SIG_BLOCK.sub("", text)
+
+
 def _git(repo, *args, check=True):
     r = subprocess.run(["git", "-C", repo, *args], capture_output=True,
-                       text=True, timeout=120)
+                       text=True, encoding="utf-8", errors="replace",
+                       timeout=120)
     if check and r.returncode != 0:
         raise RuntimeError(f"git {' '.join(args)}: {r.stderr.strip()[:200]}")
     return r.stdout
@@ -186,6 +199,8 @@ def audit_repo(repo, include_reachable=False, max_blob=2 * 1024 * 1024):
             stats["skipped_large"] += 1
             continue
         body = _git(repo, "cat-file", typ, oid)
+        if typ in ("commit", "tag"):
+            body = _strip_signatures(body)
         stats["scanned"] += 1
         for f in scan_text(body, f"{status}:{oid}"):
             f["oid"] = oid
@@ -263,11 +278,33 @@ def self_test():
               "JgVXqzLmNpRtY8uXkQvW2hJ")
     assert scan_text(didkey, "t") == [], didkey
     assert scan_text("token: z6Mk" + "A9" * 20, "t") == []
+    # gpgsig / SSH signature payloads are leftover-commit noise, not secrets
+    sig_run = base64.b64encode(_os.urandom(48)).decode()
+    signed_commit = (
+        "tree deadbeef\n"
+        "author t <t@t> 1 +0000\n"
+        "committer t <t@t> 1 +0000\n"
+        "gpgsig -----BEGIN PGP SIGNATURE-----\n"
+        f" {sig_run}\n"
+        " -----END PGP SIGNATURE-----\n"
+        "\n"
+        "rotate AKIAIOSFODNN7EXAMPLE\n"
+    )
+    assert any(f["rule"] == "HIGH_ENTROPY_RUN"
+               for f in scan_text(signed_commit, "t"))
+    stripped = _strip_signatures(signed_commit)
+    assert not any(f["rule"] == "HIGH_ENTROPY_RUN"
+                   for f in scan_text(stripped, "t")), stripped
+    assert any(f["rule"] == "AWS_ACCESS_KEY" for f in scan_text(stripped, "t"))
+    ssh_sig = ("-----BEGIN SSH SIGNATURE-----\n" + sig_run +
+               "\n-----END SSH SIGNATURE-----")
+    assert scan_text(_strip_signatures(ssh_sig), "t") == []
 
     # --- end-to-end on a throwaway repo ----------------------------------
     repo = tempfile.mkdtemp(prefix="reflog-audit-t-")
     def g(*a):
-        return _git(repo, "-c", "user.name=t", "-c", "user.email=t@t", *a)
+        return _git(repo, "-c", "user.name=t", "-c", "user.email=t@t",
+                    "-c", "commit.gpgsign=false", *a)
     g("init", "-q", "-b", "main")
     def commit(name, fname, content):
         open(_os.path.join(repo, fname), "w").write(content)
@@ -300,8 +337,8 @@ def self_test():
         "key = AKIAIOSFODNN7EXAMPLE\n")
     _git(histrepo, "init", "-q", "-b", "main")
     _git(histrepo, "-c", "user.name=t", "-c", "user.email=t@t", "add", "-A")
-    _git(histrepo, "-c", "user.name=t", "-c", "user.email=t@t", "commit",
-         "-q", "-m", "reachable secret")
+    _git(histrepo, "-c", "user.name=t", "-c", "user.email=t@t",
+         "-c", "commit.gpgsign=false", "commit", "-q", "-m", "reachable secret")
     assert audit_repo(histrepo)[0] == []  # visible to git log: not our scope
     hf = audit_repo(histrepo, include_reachable=True)[0]
     assert any(f["where"].startswith("HISTORY:") and
@@ -336,9 +373,48 @@ def self_test():
     _git(clean, "init", "-q", "-b", "main")
     open(_os.path.join(clean, "a.txt"), "w").write("just text\n")
     _git(clean, "-c", "user.name=t", "-c", "user.email=t@t", "add", "-A")
-    _git(clean, "-c", "user.name=t", "-c", "user.email=t@t", "commit",
-         "-q", "-m", "init")
+    _git(clean, "-c", "user.name=t", "-c", "user.email=t@t",
+         "-c", "commit.gpgsign=false", "commit", "-q", "-m", "init")
     assert audit_repo(clean)[0] == []
+
+    # binary leftover must not abort the scan before a later secret
+    binrepo = tempfile.mkdtemp(prefix="reflog-audit-b-")
+    _git(binrepo, "init", "-q", "-b", "main")
+    subprocess.run(["git", "-C", binrepo, "hash-object", "-w", "--stdin"],
+                   input=b"\x89PNG\r\n\x1a\n" + bytes(range(256)),
+                   capture_output=True, check=True)
+    subprocess.run(["git", "-C", binrepo, "hash-object", "-w", "--stdin"],
+                   input="AKIAIOSFODNN7EXAMPLE\n", capture_output=True,
+                   text=True, check=True)
+    bf = audit_repo(binrepo)[0]
+    assert any(f["rule"] == "AWS_ACCESS_KEY" for f in bf), bf
+
+    # a dangling signed commit is not reported as HIGH_ENTROPY_RUN
+    sigrepo = tempfile.mkdtemp(prefix="reflog-audit-s-")
+    def sg(*a):
+        return _git(sigrepo, "-c", "user.name=t", "-c", "user.email=t@t",
+                    "-c", "commit.gpgsign=false", *a)
+    sg("init", "-q", "-b", "main")
+    open(_os.path.join(sigrepo, "a.txt"), "w").write("hello\n")
+    sg("add", "-A")
+    sg("commit", "-q", "-m", "base")
+    tree = sg("rev-parse", "HEAD^{tree}").strip()
+    payload = (
+        f"tree {tree}\n"
+        "author t <t@t> 1 +0000\n"
+        "committer t <t@t> 1 +0000\n"
+        "gpgsig -----BEGIN PGP SIGNATURE-----\n"
+        f" {sig_run}\n"
+        " -----END PGP SIGNATURE-----\n"
+        "\n"
+        "rewritten signed commit\n"
+    )
+    subprocess.run(["git", "-C", sigrepo, "hash-object", "-t", "commit",
+                    "-w", "--stdin"],
+                   input=payload, capture_output=True, text=True, check=True)
+    sf = audit_repo(sigrepo)[0]
+    assert not any(f["rule"] == "HIGH_ENTROPY_RUN" for f in sf), sf
+
     print("reflog-audit self-test OK "
           "(scan rules + redaction, reflog-only commit, dangling blob + "
           "commit, reflog-message leak, gc remediation, clean repo)")
