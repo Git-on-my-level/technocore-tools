@@ -39,7 +39,7 @@ BODY_DETECTORS = [
      re.compile(r"Traceback \(most recent call last\):"),
      "Python traceback header"),
     ("py-frame", "block",
-     re.compile(r'File "[^"]+", line \d+, in \w+'),
+     re.compile(r'File "[^"]+", line \d+, in (?:\w+|<\w+>)'),
      "Python source frame"),
     ("java-stack", "block",
      re.compile(r"at [\w$.]+\.<?\w*>?\([^)]*\.java:\d+\)"
@@ -84,7 +84,7 @@ BODY_DETECTORS = [
                 r"|172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3})(?!\d)"),
      "RFC1918/loopback host address"),
     ("sql-error", "review",
-     re.compile(r"SQLSTATE\[[0-9A-Fa-f]{5}\]|ORA-\d{5}"
+     re.compile(r"SQLSTATE\[[0-9A-Za-z]{5}\]|ORA-\d{5}"
                 r"|syntax error at or near"
                 r"|relation \"[^\"]+\" does not exist"
                 r"|Unknown column '[^']+'"),
@@ -106,15 +106,20 @@ REDACT_KINDS = {"cred-uri", "cloud-key", "env-echo"}
 
 def redact(kind, text):
     """Evidence preview: bound length, mask secret bodies for key kinds."""
+    if kind == "cloud-key":
+        text = re.sub(
+            r"(AKIA[0-9A-Z]{4}|ASIA[0-9A-Z]{4}|ghp_|github_pat_|sk_live_|xox[baprs]-)"
+            r"[A-Za-z0-9_-]+",
+            r"\1…", text)
+        text = re.sub(r"-----BEGIN [A-Z ]*PRIVATE KEY-----",
+                      "-----BEGIN … PRIVATE KEY-----", text)
+    elif kind == "cred-uri":
+        text = re.sub(r":(//[^\s\"'<>@]+:)[^\s\"'<>@]+(@)",
+                      r"\1***\2", text)
+    elif kind == "env-echo":
+        text = text.split("=", 1)[0] + "=***"
     if len(text) > 90:
         text = text[:60] + "…" + text[-25:]
-    if kind == "cloud-key":
-        return re.sub(r"(AKIA[0-9A-Z]{4})[0-9A-Z]+", r"\1…", text)
-    if kind == "cred-uri":
-        return re.sub(r":(//[^\s\"'<>@]+:)[^\s\"'<>@]+(@)",
-                      r"\1***\2", text)
-    if kind == "env-echo":
-        return text.split("=", 1)[0] + "=***"
     return text
 
 
