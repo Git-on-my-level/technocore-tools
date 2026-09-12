@@ -13,7 +13,7 @@ Scope: the continuity half (cursor chain never gaps or branches) and the
 stability half (sort order never inverts, keys never repeat across pages,
 re-fetching a cursor never drifts — exactly what concurrent writes break).
 Captures are data only: plain parsing, no network, no subprocess. rc 0
-clean, 1 findings, 2 usage/IO. Stdlib only.
+clean, 1 BLOCK/WARN, 2 usage/IO. Stdlib only.
 """
 import argparse
 import base64
@@ -25,8 +25,7 @@ MISSING = object()  # sentinel: item lacks the sort field
 
 
 def sval(item, field):
-    v = item.get(field, MISSING)
-    return None if v is MISSING else v
+    return item.get(field, MISSING)
 
 
 def cmp_mixed(a, b):
@@ -178,10 +177,12 @@ def audit(records, sortspec, key_field, codec):
 
             # --- sort stability + duplicate keys within the walk ---
             if prev is not None:
-                pitems = [it for it in prev[1].get("items", [])
+                p_raw = prev[1].get("items")
+                pitems = [it for it in (p_raw if isinstance(p_raw, list) else [])
                           if isinstance(it, dict)]
                 last = sort_key(pitems[-1], sortspec) if pitems else None
-                first = sort_key(items[0], sortspec) if items else None
+                first = (sort_key(items[0], sortspec)
+                         if items and isinstance(items[0], dict) else None)
                 if last is not None and first is not None:
                     ok = key_le(last, first, sortspec)
                     if ok is None:
@@ -210,8 +211,11 @@ def audit(records, sortspec, key_field, codec):
                     add("WARN", "missing-sort-field", coll, walk, tag,
                         f"item {k!r} lacks a --sort field")
             for pos in range(1, len(items)):
-                a = sort_key(items[pos - 1], sortspec)
-                b = sort_key(items[pos], sortspec)
+                ia, ib = items[pos - 1], items[pos]
+                if not isinstance(ia, dict) or not isinstance(ib, dict):
+                    continue
+                a = sort_key(ia, sortspec)
+                b = sort_key(ib, sortspec)
                 if any(v is MISSING for v in a + b):
                     continue
                 ok = key_le(a, b, sortspec)
@@ -319,7 +323,7 @@ def main(argv=None):
         print(json.dumps({"findings": findings}, ensure_ascii=False))
     else:
         render(findings)
-    return 1 if findings else 0
+    return 1 if any(x["severity"] != "INFO" for x in findings) else 0
 
 
 def _mk(coll, walk, n, items, req=None, nxt=None, more=None,
@@ -397,6 +401,15 @@ def self_test():
         ["empty-page", "under-filled-page"]
     nokey = [(0, _mk("c", "w", 0, [{"x": 1}], more=False))]
     assert "missing-key" in _kinds(audit(nokey, [("id", True)], "id", "opaque"))
+    # items: null and mixed-type arrays are findings, not crashes
+    null_items = [(0, _mk("c", "w", 0, None, more=True, nxt="n1")),
+                  (1, _mk("c", "w", 1, ["not-a-dict", 3], more=False,
+                          req="n1"))]
+    assert "missing-key" in _kinds(
+        audit(null_items, [("id", True)], "id", "opaque"))
+    mixed_items = [(0, _mk("c", "w", 0, ["x", {"id": 1}, 2], more=False))]
+    assert "missing-key" in _kinds(
+        audit(mixed_items, [("id", True)], "id", "opaque"))
 
     # desc ordering respected: strictly descending ids stay silent
     desc = [(0, _mk("c", "w", 0, [{"id": 9}, {"id": 5}], more=True,
@@ -432,6 +445,13 @@ def self_test():
     assert "cursor-undecodable" in _kinds(
         audit([(0, _mk("c", "w", 0, [{"id": 1}], more=True, nxt="!!!"))],
               [("id", True)], "id", "base64json"))
+    # last item lacking a --sort field must not false-BLOCK cursor-bind
+    def cur_t(v):
+        return base64.urlsafe_b64encode(
+            json.dumps({"t": v}).encode()).decode().rstrip("=")
+    miss_bind = [(0, _mk("c", "w", 0, [{"id": 1}], more=True, nxt=cur_t(9)))]
+    assert _kinds(audit(miss_bind, [("t", True)], "id", "base64json")) == \
+        ["missing-sort-field"]
 
     # cursor leak across collections; late page; ambiguous terminator;
     # resumed walk; dangling terminator
@@ -470,6 +490,19 @@ def self_test():
         assert main(["/nonexistent.jsonl"]) == 2
     finally:
         os.unlink(path)
+    # INFO-only (resumed walk) is rc 0; WARN/BLOCK still fail
+    with tempfile.NamedTemporaryFile("w", suffix=".jsonl",
+                                     delete=False) as tf:
+        tf.write(json.dumps(_mk("c", "w", 0, [{"id": 7}], more=False,
+                                req="saved")) + "\n")
+        path = tf.name
+    try:
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            assert main([path]) == 0
+        assert "resumed-walk" in buf.getvalue()
+    finally:
+        os.unlink(path)
     with tempfile.NamedTemporaryFile("w", suffix=".jsonl",
                                      delete=False) as tf:
         tf.write('{"broken\n[]\n{"collection": "c", "fetch": "w", '
@@ -483,7 +516,7 @@ def self_test():
     finally:
         os.unlink(path)
 
-    print("cursor-continuity-audit self-test OK (26 assertion groups: "
+    print("cursor-continuity-audit self-test OK (29 assertion groups: "
           "chain continuity, sort stability incl. desc, duplicates, page "
           "sizing, re-fetch drift, base64json cursor binding, cursor leak, "
           "late pages, terminators, CLI rc contract, json export)")
