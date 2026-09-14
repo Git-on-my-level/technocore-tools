@@ -15,7 +15,8 @@ DEMAND: evidence/suggestions/tools-services/2026-09-13.md
   Echoed 2026-09-12.md: per-model throughput / reward-rate metrics.
 Scope: the offline half — the capture file IS the event stream; the
 findings ARE the alerting; --report IS the benchmark table. Pure
-parsing, no network/subprocess. rc 0/1/2. Stdlib only.
+parsing, no network/subprocess. rc 0 clean/INFO, 1 BLOCK/WARN, 2 IO.
+Stdlib only.
 """
 import argparse
 import json
@@ -84,7 +85,8 @@ def analyze(events, opts=None):
 
     def tstat(model):
         return models.setdefault(
-            model, dict(matched=0, done=0, comp=[], bids=[], reward=0.0))
+            model, dict(matched=0, done=0, open=0, comp=[], bids=[],
+                        reward=0.0))
 
     def trec(tid):
         return tasks.setdefault(
@@ -96,7 +98,8 @@ def analyze(events, opts=None):
         for _ts, rec in reversed(mrec):
             if num(rec.get("bid")) is not None:
                 return num(rec["bid"])
-        for lts, lbid in reversed(listed.get(cap, [])):
+        for lts, lbid in sorted(listed.get(cap, []),
+                                key=lambda x: x[0], reverse=True):
             if lts <= ts:
                 return lbid
         return None
@@ -110,7 +113,7 @@ def analyze(events, opts=None):
         ev = rec.get("event")
         if ev == "listed":
             if num(rec.get("bid")) is not None:
-                listed.setdefault(str(rec.get("capability", "default")),
+                listed.setdefault(str(rec.get("capability", "-")),
                                   []).append((ts, num(rec["bid"])))
         elif ev in ("session-online", "session-offline"):
             key = (str(rec.get("model", "-")),
@@ -193,6 +196,7 @@ def analyze(events, opts=None):
         else:
             add("INFO", "open-task", tid,
                 f"still open {capture_end - mts:.0f}s after match")
+            tstat(r["model"] or "-")["open"] += 1
         if len(r["proofs"]) > 1:
             add("INFO", "re-proof", tid,
                 f"{len(r['proofs'])} proofs for one task")
@@ -201,9 +205,10 @@ def analyze(events, opts=None):
             nval = prec.get("validators")
             need = min(o["quorum"], nval) if isinstance(nval, int) \
                 and nval >= 1 else o["quorum"]
-            ok = [a for a in r["acks"] if a[1].get("ok") is True
-                  and pts <= a[0] <= pts + o["ack"]]
-            if len(ok) < need:
+            ok = {a[1].get("validator") for a in r["acks"]
+                  if a[1].get("ok") is True
+                  and pts <= a[0] <= pts + o["ack"]}
+            if len(ok) < need and (r["done"] or capture_end - pts > o["ack"]):
                 add("BLOCK", "validator-timeout", tid, f"{len(ok)}/{need} "
                     f"validator acks ok within {o['ack']:.0f}s of proof")
             for ats, arec in r["acks"]:
@@ -223,8 +228,7 @@ def analyze(events, opts=None):
                 how = "overpay" if amt > bid0 else "underpay"
                 add("BLOCK", "reward-mismatch", tid,
                     f"{how}: reward {amt:.2f} vs bid {bid0:.2f}")
-            else:
-                tstat(r["model"] or "-")["reward"] += amt
+            tstat(r["model"] or "-")["reward"] += amt
         if bid0 is not None:
             tstat(r["model"] or "-")["bids"].append(bid0)
 
@@ -253,17 +257,18 @@ def analyze(events, opts=None):
         comp = sorted(st["comp"])
         p95 = comp[min(len(comp) - 1, max(0, -(-95 * len(comp) // 100)
                                           - 1))] if comp else None
+        closed = st["matched"] - st["open"]
+        succ = st["done"] / closed if closed else None
         rows.append(dict(model=model, matched=st["matched"],
                          done=st["done"],
-                         success=(st["done"] / st["matched"]
-                                  if st["matched"] else None),
+                         success=succ,
                          med_s=median(comp) if comp else None, p95_s=p95,
                          med_bid=median(st["bids"]) if st["bids"] else None,
                          reward=st["reward"]))
         if st["matched"] >= o["min_tasks"] \
-                and st["done"] / st["matched"] < o["min_success"]:
+                and succ is not None and succ < o["min_success"]:
             add("WARN", "model-underperform", "-",
-                f"model {model}: success {st['done']}/{st['matched']} "
+                f"model {model}: success {st['done']}/{closed} "
                 f"below {o['min_success']:.0%}")
 
     f.sort(key=lambda x: SEVS.index(x["severity"]))
@@ -329,7 +334,7 @@ def main(argv=None):
         render(findings)
         if args.report:
             render_report(rows)
-    return 1 if findings else 0
+    return 1 if any(x["severity"] != "INFO" for x in findings) else 0
 
 
 def _kinds(finds):
@@ -403,6 +408,21 @@ def self_test():
         and "re-proof" in ks, got
     assert "2/3" in next(x for x in got
                          if x["kind"] == "validator-timeout")["detail"]
+    # in-window proof with no acks is not a timeout (window still open)
+    inflight = lc[:3]  # listed, matched, proof; capture_end=400
+    assert "validator-timeout" not in _kinds(analyze(inflight)[0])
+    # repeated ok acks from one validator do not satisfy quorum
+    dupack = lc[:3] + [(3, _ev(410, event="validator-ack", task="T1",
+                                 validator="V1", ok=True)),
+                       (4, _ev(420, event="validator-ack", task="T1",
+                                 validator="V1", ok=True)),
+                       (5, _ev(430, event="validator-ack", task="T1",
+                                 validator="V1", ok=True)),
+                       (6, _ev(1100, event="done", task="T1"))]
+    got = analyze(dupack)[0]
+    assert "validator-timeout" in _kinds(got)
+    assert "1/3" in next(x for x in got
+                         if x["kind"] == "validator-timeout")["detail"]
 
     # reward accounting: overpay/underpay BLOCK, unpriced INFO
     for amt, how in ((6.0, "overpay"), (4.5, "underpay")):
@@ -413,6 +433,18 @@ def self_test():
                 (1, _ev(2, event="done", task="U")),
                 (2, _ev(3, event="reward", task="U", amount=7.0))]
     assert "reward-unpriced" in _kinds(analyze(unpriced)[0])
+    # omitted capability on listed and matched still uses the listed bid
+    ncap = [(0, _ev(1, event="listed", bid=5.0)),
+            (1, _ev(2, event="matched", task="C", model="m", sla=50)),
+            (2, _ev(3, event="done", task="C")),
+            (3, _ev(4, event="reward", task="C", amount=5.0))]
+    finds, rows = analyze(ncap)
+    assert "reward-unpriced" not in _kinds(finds) and finds == [], finds
+    assert rows[0]["reward"] == 5.0 and rows[0]["med_bid"] == 5.0, rows
+    # mismatch still accumulates into the model cost column
+    over = analyze(lc[:7] + [(7, _ev(600, event="reward", task="T1",
+                                      amount=6.0))])
+    assert over[1][0]["reward"] == 6.0, over[1]
 
     # hygiene: re-matched, double-done, orphans, reward-without-done, no-sla
     hyg = [(0, _ev(10, event="matched", task="H", model="m", sla=100)),
@@ -435,6 +467,17 @@ def self_test():
     got = analyze(bids)[0]
     assert _kinds(got) == ["bid-outlier"] and "running median 4.15" \
         in got[0]["detail"] and len(got) == 1
+    # latest listed bid by timestamp, not reverse file order
+    oo = [(0, _ev(100, event="listed", capability="c", bid=9.0)),
+          (1, _ev(200, event="listed", capability="c", bid=5.0)),
+          (2, _ev(50, event="listed", capability="c", bid=99.0)),
+          (3, _ev(250, event="matched", task="B1", capability="c",
+                  model="m", sla=50)),
+          (4, _ev(260, event="done", task="B1")),
+          (5, _ev(270, event="reward", task="B1", amount=5.0))]
+    finds, rows = analyze(oo)
+    assert "reward-mismatch" not in _kinds(finds), finds
+    assert rows[0]["med_bid"] == 5.0 and rows[0]["reward"] == 5.0, rows
     flapy = [(i, _ev(10 * i, event=("session-online" if i % 2 == 0
                                     else "session-offline"),
                      model="m2", capability="a")) for i in range(5)]
@@ -467,6 +510,18 @@ def self_test():
     assert row["model"] == "slow" and row["matched"] == 5 \
         and row["done"] == 2 and abs(row["med_s"] - 200.0) < 1e-9 \
         and abs(row["p95_s"] - 300.0) < 1e-9, row
+    # in-flight (open) tasks excluded from success / underperform
+    busy = []
+    for i in range(5):
+        busy.append((2 * i, _ev(10.0 + i, event="matched",
+                                 task=f"O{i}", model="busy", sla=900)))
+        if i < 4:
+            busy.append((2 * i + 1, _ev(20.0 + i, event="done",
+                                          task=f"O{i}")))
+    got, rows = analyze(busy)
+    assert "model-underperform" not in _kinds(got)
+    assert "open-task" in _kinds(got)
+    assert rows[0]["success"] == 1.0 and rows[0]["done"] == 4, rows
 
     # malformed / ts-less / unknown-event lines
     junk = [(0, None), (1, _ev("not-a-time", event="done", task="X")),
@@ -486,6 +541,9 @@ def self_test():
     assert main(["/nonexistent.jsonl"]) == 2
     rc, out = run(['{"broken', _ev(1, event="done", task="Z")])
     assert rc == 1 and "1 unparsable" in out, out
+    # INFO-only (open-task) is rc 0; WARN/BLOCK still fail
+    rc, out = run([_ev(1, event="matched", task="O", model="m", sla=50)])
+    assert rc == 0 and "open-task" in out, out
 
     print("task-sla-audit self-test OK (16 groups: lifecycle, SLA breach, "
           "stalled/open, validator timeout, rewards, hygiene, bids, "
