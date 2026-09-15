@@ -196,10 +196,14 @@ def analyze(views, malformed, gap_min=1, regress_secs=0.0):
             continue
         allseq = sorted({s for m in rv.values() for s in m})
         for seq in allseq:
-            holders = [(r, fps[0]) for r in sorted(rv) if seq in rv[r]
-                       for fps in [rv[r][seq]]]
-            if len({fp for _, fp in holders}) > 1:
-                (r1, f1), (r2, f2) = holders[0], holders[-1]
+            holders = [(r, fp) for r in sorted(rv) if seq in rv[r]
+                       for fp in rv[r][seq]]
+            pair = next(((r1, f1, r2, f2)
+                         for r1, f1 in holders
+                         for r2, f2 in holders
+                         if r1 < r2 and f1 != f2), None)
+            if pair:
+                r1, f1, r2, f2 = pair
                 add("history-fork", "BLOCK", did,
                     f"seq {seq}: {r1} body {f1[:8]} vs {r2} body {f2[:8]}")
         recvs = sorted(rv)
@@ -312,9 +316,9 @@ def main(argv=None):
                           "findings": findings}, ensure_ascii=False))
     elif args.did:
         print(deep_dive(views, args.did))
+        findings = [f for f in findings if f["did"] == args.did]
         for f in findings:
-            if f["did"] == args.did:
-                print(f"[{f['sev']}] {f['code']} {f['detail']}")
+            print(f"[{f['sev']}] {f['code']} {f['detail']}")
     else:
         print(fmt_report(findings, rows, len(views), malformed))
     return 1 if findings else 0
@@ -403,6 +407,24 @@ def self_test():
     assert rc == 1 and codes(out) == ["history-fork"], out
     assert "recvA body " in out and "recvB body " in out, out
     assert json.loads(out)["dids"][0]["views"] == 2
+    # three views: first/last alpha share a body, middle diverges —
+    # must cite a pair that actually differs (not recvA vs recvC)
+    a = [_rec(2, 110, text="x", receiver="recvA")]
+    b = [_rec(2, 111, text="y", receiver="recvB")]
+    c = [_rec(2, 112, text="x", receiver="recvC")]
+    rc, out = run([a, b, c], ["--json"])
+    assert codes(out) == ["history-fork"], out
+    detail = json.loads(out)["findings"][0]["detail"]
+    hx = body_fp("did:key:A", "x", None)[:8]
+    hy = body_fp("did:key:A", "y", None)[:8]
+    assert hx in detail and hy in detail and "recvB" in detail, detail
+    # intra-view conflict: extra body dropped by fps[0] still forks
+    a = [_rec(2, 110, text="x", receiver="recvA"),
+         _rec(2, 115, text="y", receiver="recvA")]
+    b = [_rec(2, 111, text="y", receiver="recvB")]
+    rc, out = run([a, b], ["--json"])
+    assert set(codes(out)) == {"seq-conflict", "history-fork"}, out
+    assert hx in out and hy in out, out
 
     # 6. divergent overlap: recvB lacks 3 of 1..5; survives --gap-min 2
     #    (which silences recvB's own per-view gap)
@@ -452,6 +474,13 @@ def self_test():
     rc, out = run([cap], ["--did", "did:key:A"])
     assert rc == 1 and "gap 3-4" in out and "seq 5" in out, out
     assert "room lobby" in out and "[WARN] seq-gap" in out, out
+    # clean DID walk must not inherit another DID's gap or malformed-line
+    cap = [_rec(1, 100), _rec(2, 110), _rec(3, 120),
+           _rec(1, 200, frm="did:key:B"), _rec(3, 220, frm="did:key:B"),
+           '{"nope']
+    rc, out = run([cap], ["--did", "did:key:A"])
+    assert rc == 0 and "[WARN]" not in out and "[INFO]" not in out, (rc, out)
+    assert "trail did:key:A" in out, out
 
     # 12. CLI contract: rc 2 unreadable; report columns; views listed
     assert main(["/nonexistent.jsonl"]) == 2
