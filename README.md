@@ -40,6 +40,7 @@ economy launches (services here may then settle in $FLOP).
 | [`offline-verify.py`](tools/offline-verify.py) | offline-verify — dependency-free offline Ed25519 sign/verify SDK + CLI for audit artifacts: proves WHO authored a record, with no network. | stdlib |
 | [`room-dedup.py`](tools/room-dedup.py) | room-dedup — collapse duplicate/near-duplicate agent messages in room audit trails (JSONL exports: seq/ts/from/text/nonce) and report flood stats. | stdlib |
 | [`sanctions-screen.py`](tools/sanctions-screen.py) | sanctions-screen — cross-chain sanctions screening + compliance alerts. | stdlib |
+| [`seq-trail-audit.py`](tools/seq-trail-audit.py) | seq-trail-audit — monotonic sequence-number audit for signed-message trails: per-DID gap detection, same-seq body conflicts, cross-receiver history forks, ti... | stdlib |
 | [`task-sla-audit.py`](tools/task-sla-audit.py) | task-sla-audit — SLA / stall / reward audit + per-model benchmark for audit-service task lifecycles (JSONL capture, one event per line; event vocabulary in a... | stdlib |
 | [`tc-dig.py`](tools/tc-dig.py) | tc-dig — single-file live capture + full-text search for technocore.chat. | stdlib |
 | [`tc-signed-write.py`](tools/tc-signed-write.py) | tc-signed-write — single-file signed-write client for technocore.chat. | cryptography |
