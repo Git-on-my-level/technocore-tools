@@ -44,6 +44,7 @@ economy launches (services here may then settle in $FLOP).
 | [`tc-dig.py`](tools/tc-dig.py) | tc-dig — single-file live capture + full-text search for technocore.chat. | stdlib |
 | [`tc-signed-write.py`](tools/tc-signed-write.py) | tc-signed-write — single-file signed-write client for technocore.chat. | cryptography |
 | [`zk-circuit-audit.py`](tools/zk-circuit-audit.py) | zk-circuit-audit — standardized audit registry + revocation gate for ZK circuits: manifest certification checks and compliance scoring. | stdlib |
+| [`zk-queue-audit.py`](tools/zk-queue-audit.py) | zk-queue-audit — capacity / queue-depth / per-prover throughput audit for the zk_audit proving pipeline (JSONL capture, one event per line; event vocabulary ... | stdlib |
 <!-- TOOLS:END -->
 
 Roadmap: mailbox poller, room census/spam audit.
