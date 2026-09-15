@@ -14,8 +14,8 @@ DEMAND: evidence/suggestions/tools-services/2026-09-14.md
     [more nodes]" when "queue times double" / thresholds breached.
   Echoed: "status endpoint with queue depth, proofs/cycle, wait times".
 Scope: the offline half — the capture IS the event stream; --report IS
-the dashboard; findings ARE the alerts. Pure parsing. rc 0/1/2.
-Stdlib only.
+the dashboard; findings ARE the alerts. Pure parsing. rc 0 clean/INFO,
+1 BLOCK/WARN, 2 IO. Stdlib only.
 """
 
 import argparse
@@ -150,13 +150,18 @@ def analyze(events, opts=None):
                 cur = None
         elif ev == "submit":
             r = prec(pid)
-            r["submit"] = ts if r["submit"] is None else r["submit"]
+            first = r["submit"] is None
+            r["submit"] = ts if first else r["submit"]
             r["epoch"] = cur if r["epoch"] is None else r["epoch"]
-            if cur is not None:
-                erec(cur)["submitted"] += 1
-            bump_depth(ts, +1)
+            # first wait only: retries / dup lines must not add phantom slots
+            if first and not r["pickups"] and not r["verified"]:
+                if cur is not None:
+                    erec(cur)["submitted"] += 1
+                bump_depth(ts, +1)
         elif ev == "pickup":
             r = prec(pid)
+            waiting = (r["submit"] is not None and not r["pickups"]
+                       and not r["verified"])
             p = str(rec.get("prover", "-"))
             st = pstat(p)
             st["pickups"] += 1
@@ -172,7 +177,8 @@ def analyze(events, opts=None):
                 if wait > o["wait"]:
                     add("BLOCK", "starved-proof", pid, f"waited {wait:.0f}s for"
                         f" pickup (max {o['wait']:.0f}s)")
-            bump_depth(ts, -1)
+            if waiting:
+                bump_depth(ts, -1)
         elif ev == "proved":
             r = prec(pid)
             st = pstat(str(rec.get("prover", "-")))
@@ -189,7 +195,8 @@ def analyze(events, opts=None):
         elif ev == "verified":
             r = prec(pid)
             eid = rec.get("epoch", cur)
-            if len(r["verified"]) >= 1:
+            first = not r["verified"]
+            if not first:
                 add("WARN", "double-verify", pid,
                     f"{len(r['verified']) + 1} verified events")
             if not r["proved"]:
@@ -199,16 +206,19 @@ def analyze(events, opts=None):
                 add("INFO", "late-verify", pid, f"verified {ts - r['proved'][-1]:.0f}s"
                     f" after proved (window {o['late']:.0f}s)")
             r["verified"].append(ts)
-            if eid is None:
-                add("INFO", "verify-unattributed", pid, "verified with no"
-                    " epoch and none open")
-            else:
-                e = erec(str(eid))
-                e["verified"] += 1
-                e["vts"].append(ts)
-                if e["close"] is not None and ts > e["close"]:
-                    add("BLOCK", "epoch-overrun", "-", f"epoch {eid}: "
-                        f"proof verified {ts - e['close']:.0f}s after close")
+            if first:
+                if r["submit"] is not None and not r["pickups"]:
+                    bump_depth(ts, -1)  # completed with dropped pickup
+                if eid is None:
+                    add("INFO", "verify-unattributed", pid, "verified with no"
+                        " epoch and none open")
+                else:
+                    e = erec(str(eid))
+                    e["verified"] += 1
+                    e["vts"].append(ts)
+                    if e["close"] is not None and ts > e["close"]:
+                        add("BLOCK", "epoch-overrun", "-", f"epoch {eid}: "
+                            f"proof verified {ts - e['close']:.0f}s after close")
         elif ev in ("prover-online", "prover-offline"):
             p = str(rec.get("prover", "-"))
             state = "on" if ev == "prover-online" else "off"
@@ -234,6 +244,8 @@ def analyze(events, opts=None):
     for pid, r in proofs.items():
         if r["submit"] is None:
             continue  # orphan pickup already flagged
+        if r["verified"]:
+            continue  # done, even if the pickup line was dropped
         if not r["pickups"]:
             if end - r["submit"] > o["wait"]:
                 add("BLOCK", "starved-proof", pid,
@@ -242,7 +254,7 @@ def analyze(events, opts=None):
             else:
                 add("INFO", "queued-proof", pid,
                     f"still queued {end - r['submit']:.0f}s after submit")
-        elif not r["verified"]:
+        else:
             add("INFO", "open-proof", pid, f"picked up but unverified "
                 f"{end - r['submit']:.0f}s after submit")
 
@@ -353,7 +365,7 @@ def main(argv=None):
         render(findings)
         if args.report:
             render_report(epochs, provers)
-    return 1 if findings else 0
+    return 1 if any(x["severity"] != "INFO" for x in findings) else 0
 
 
 def _kinds(finds):
@@ -428,6 +440,17 @@ def self_test():
     assert _kinds(got) == ["capacity-exceed"]
     assert "2 proofs verified vs capacity 1" in got[0]["detail"], got
     assert erows[0]["verified"] == 2 and abs(erows[0]["util"] - 2.0) < 1e-9
+    # duplicate verified events count one slot, not two
+    dv = [(0, _ev(100, event="epoch-open", epoch="e1")),
+          (1, _ev(200, event="submit", proof="P1")),
+          (2, _ev(210, event="pickup", proof="P1", prover="A")),
+          (3, _ev(220, event="proved", proof="P1", prover="A")),
+          (4, _ev(230, event="verified", proof="P1", epoch="e1")),
+          (5, _ev(240, event="verified", proof="P1", epoch="e1")),
+          (6, _ev(300, event="epoch-close", epoch="e1", capacity=1))]
+    got, erows, _ = analyze(dv)
+    assert _kinds(got) == ["double-verify"], got
+    assert erows[0]["verified"] == 1 and abs(erows[0]["util"] - 1.0) < 1e-9
 
     # oversubscribed (6+5=11 > 10) + unused-reserve INFO (0 verified)
     res = [(0, _ev(100, event="reserve", epoch="e1", slots=6)),
@@ -461,6 +484,22 @@ def self_test():
     got = analyze(deep, dict(wait=50))[0]
     starved = [x for x in got if x["kind"] == "starved-proof"]
     assert len(starved) == 12 and "never picked up" in starved[0]["detail"]
+    # 12 submits of one proof: one slot, no spike
+    dups = [(0, _ev(100, event="epoch-open", epoch="e1"))]
+    dups += [(1 + i, _ev(200 + i, event="submit", proof="SAME"))
+             for i in range(12)]
+    dups.append((13, _ev(300, event="epoch-close", epoch="e1", capacity=100)))
+    got, erows, _ = analyze(dups, dict(wait=1e9))
+    assert all(x["kind"] != "depth-spike" for x in got), got
+    assert erows[0]["submitted"] == 1 and erows[0]["max_depth"] == 1, erows
+    # extra pickup must not dequeue a different waiting proof
+    hid = [(0, _ev(100, event="submit", proof="Q")),
+           (1, _ev(110, event="submit", proof="R")),
+           (2, _ev(120, event="pickup", proof="Q", prover="A")),
+           (3, _ev(130, event="pickup", proof="Q", prover="A"))]
+    got = analyze(hid, dict(wait=1e9))[0]
+    queued = [x for x in got if x["kind"] == "queued-proof"]
+    assert len(queued) == 1 and queued[0]["proof"] == "R", got
 
     # hygiene: verify-without-prove, double-verify, orphan-pickup
     hyg = [(0, _ev(100, event="submit", proof="H")),
@@ -471,6 +510,12 @@ def self_test():
     ks = set(_kinds(analyze(hyg)[0]))
     assert {"verify-without-prove", "double-verify",
             "orphan-pickup"} <= ks, ks
+    # verified with a dropped pickup is finished, not starved/queued
+    nopick = [(0, _ev(100, event="submit", proof="P1")),
+              (1, _ev(200, event="proved", proof="P1", prover="A")),
+              (2, _ev(300, event="verified", proof="P1", epoch="e1"))]
+    ks = set(_kinds(analyze(nopick, dict(wait=50))[0]))
+    assert "starved-proof" not in ks and "queued-proof" not in ks, ks
 
     # re-proved / late-verify / open-proof / unattributed / uncapped
     info = [(0, _ev(100, event="submit", proof="R")),
@@ -529,8 +574,8 @@ def self_test():
     assert abs(erows[0]["med_wait"] - 20.0) < 1e-6, erows
     assert abs(prows[0]["med_prove"] - 30.0) < 1e-6, (erows, prows)
 
-    # CLI contract: rc 0 clean (+json/report shape), 2 unreadable,
-    # 1 on findings; junk line surfaced
+    # CLI contract: rc 0 clean/INFO (+json/report shape), 2 unreadable,
+    # 1 on BLOCK/WARN; junk line surfaced
     rc, out = run(clean, ["--json"])
     doc = json.loads(out)
     assert rc == 0 and not doc["findings"]
@@ -541,6 +586,9 @@ def self_test():
     assert main(["/nonexistent.jsonl"]) == 2
     rc, out = run(['{"broken', _ev(1, event="submit", proof="Z")])
     assert rc == 1 and "1 unparsable" in out, out
+    # INFO-only (queued-proof) is rc 0; WARN/BLOCK still fail
+    rc, out = run([_ev(1, event="submit", proof="Z")])
+    assert rc == 0 and "queued-proof" in out, out
 
     print("zk-queue-audit self-test OK (14 groups: lifecycle, starved "
           "x2, capacity/reserve, overrun, depth-spike, hygiene, infos, "
