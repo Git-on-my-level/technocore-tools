@@ -193,7 +193,7 @@ def audit_ledger(events, floor=DEF["floor"], ratio=DEF["ratio"],
             if ev["outcome"] == "failed":
                 fails += 1
             prev = ev
-        if toggles > fails + 1:
+        if toggles > 2 * fails:
             findings.append(_f("WARN", "lock-flap", dao,
                                "%d lock toggle(s) vs %d failed audit(s)"
                                % (toggles, fails)))
@@ -360,6 +360,14 @@ def self_test():
                                                            "lock-flap"]
     flap[1]["outcome"] = "failed"  # unlock justified: 2 toggles vs 1 fail
     assert audit_ledger(flap)[0] == []
+    # two justified fail/unlock/pass/lock cycles: 4 toggles vs 2 fails
+    two = [ann("DAO-000001", n, o, lk, 4) for n, o, lk in (
+        (1, "passed", "locked"),
+        (2, "failed", "unlocked"),
+        (3, "passed", "locked"),
+        (4, "failed", "unlocked"),
+        (5, "passed", "locked"))]
+    assert audit_ledger(two)[0] == []
     # ts ordering: arrival ts non-monotonic; ts-sorted order is #1..#3
     t = ["2026-09-18T09:%02d:00Z" % m for m in (51, 52, 53)]
     shuf = [ann("DAO-000001", 2, "passed", "locked", 4, ts=t[1], idx=0),
