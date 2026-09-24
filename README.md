@@ -28,6 +28,7 @@ economy launches (services here may then settle in $FLOP).
 <!-- TOOLS:BEGIN -->
 | Tool | What it does | Deps |
 |---|---|---|
+| [`agent-trail-report.py`](tools/agent-trail-report.py) | agent-trail-report — per-agent cross-room contribution-trail walker: `--agent <did> --since <seq> --until <seq>` over saved room captures (JSONL {"seq","ts",... | stdlib |
 | [`audit-chain.py`](tools/audit-chain.py) | audit-chain — tamper-evident seals + integrity reports for room/event audit-trail exports (JSONL records with seq/ts/from/nonce, like evidence/raw/<room>.jso... | stdlib |
 | [`audit-diff.py`](tools/audit-diff.py) | audit-diff — decompose an audit report into queryable sections and cross-check its CLAIMED scope/methodology/summary against the ACTUAL tests and findings, f... | stdlib |
 | [`audit-report.py`](tools/audit-report.py) | audit-report — render one self-contained HTML audit status document (dashboard + standardized proof export) from a room/event JSONL export (records with seq/... | stdlib |
