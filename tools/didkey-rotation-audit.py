@@ -30,7 +30,7 @@ B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
 MULTICODEC = {  # name -> (prefix bytes, payload length)
     "ed25519-pub": (b"\xed\x01", 32),
     "x25519-pub": (b"\xec\x01", 32),
-    "secp256k1-pub": (b"\xe7\x03", 33),
+    "secp256k1-pub": (b"\xe7\x01", 33),
     "p256-pub": (b"\x80\x24", 33),
 }
 GENESIS = "00" * 32  # chain seal before a controller's first event
@@ -168,6 +168,14 @@ def audit(events):
             if st["active"] is not None:
                 flag(ln, ev, "double-register", "MEDIUM",
                      f"controller already holds active key {st['active'][:20]}...")
+            if did in st["revoked"]:
+                flag(ln, ev, "key-reuse", "HIGH", "registers a revoked key")
+            elif did in st["history"] and did != st["active"]:
+                flag(ln, ev, "key-reuse", "HIGH", "registers a historical key")
+            holder = owners.get(did)
+            if holder is not None and holder != ctrl:
+                flag(ln, ev, "cross-controller-collision", "HIGH",
+                     f"key already active for controller {holder}")
             owners.pop(st["active"], None)
             st["active"] = did
             st["history"].add(did)
@@ -230,9 +238,14 @@ def audit(events):
                 flag(ln, ev, "chain-break", "HIGH",
                      f"revoke prev_did {str(prev)[:20]}... != active "
                      f"{st['active'][:20]}...")
-            owners.pop(st["active"], None)
+            elif did != st["active"]:
+                flag(ln, ev, "chain-break", "HIGH",
+                     f"revoke did {str(did)[:20]}... != active "
+                     f"{st['active'][:20]}...")
+            if did == st["active"]:
+                owners.pop(st["active"], None)
+                st["active"] = None
             st["revoked"].add(did if did else st["active"])
-            st["active"] = None
     return finds
 
 
