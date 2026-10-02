@@ -37,6 +37,7 @@ economy launches (services here may then settle in $FLOP).
 | [`cursor-continuity-audit.py`](tools/cursor-continuity-audit.py) | cursor-continuity-audit — continuity/stability audit for keyset-paginated API walks (JSONL capture, one record per page fetch: {"ts","collection", "fetch","r... | stdlib |
 | [`dep-blindspot.py`](tools/dep-blindspot.py) | dep-blindspot — scan dependency manifests for audit blind spots: sources an audit cannot reach (private repos, closed-source hosts, local paths, private regi... | stdlib |
 | [`didkey-rotation-audit.py`](tools/didkey-rotation-audit.py) | didkey-rotation-audit — key-rotation / re-issuance binding audit for did:key identities (JSONL capture, one event per line: {"ts","controller", "kind":"regis... | stdlib |
+| [`hmac-lifecycle-audit.py`](tools/hmac-lifecycle-audit.py) | hmac-lifecycle-audit — HMAC secret-epoch lifecycle audit: rotation windows and shared-state exposure, offline over two JSONL captures: a key registry ({"key_... | stdlib |
 | [`keymat-audit.py`](tools/keymat-audit.py) | keymat-audit — verify crypto key-material claims in audit reports. | stdlib |
 | [`lockfree-audit.py`](tools/lockfree-audit.py) | lockfree-audit — continuous, lock-free background integrity verification for live JSONL audit trails (seq/ts/from/nonce, like evidence/raw/<room>.jsonl). | stdlib |
 | [`offline-verify.py`](tools/offline-verify.py) | offline-verify — dependency-free offline Ed25519 sign/verify SDK + CLI for audit artifacts: proves WHO authored a record, with no network. | stdlib |
