@@ -52,7 +52,7 @@ import sys
 DEF = dict(crypto_re=r"(key|sig|secret|wallet|mnemonic|ed25519|seed|"
                      r"privkey|credential)")
 PUBLIC_HOSTS = ("github.com", "gitlab.com", "bitbucket.org",
-                "codeberg.org", "sr.ht")
+                "codeberg.org", "sr.ht", "git.sr.ht")
 
 CRYPTO_NAME = re.compile(DEF["crypto_re"], re.I)
 
@@ -88,7 +88,7 @@ def load_gitmodules(root):
         m = re.match(r'submodule\s+"([^"]+)"', sec)
         if not m:
             continue
-        out[m.group(1)] = cp[sec].get("url", "")
+        out[cp[sec].get("path") or m.group(1)] = cp[sec].get("url", "")
     return out, False
 
 
@@ -96,14 +96,14 @@ def walk_repo(root, max_files=200000):
     """-> (files, gitlinks, escapes) — repo-relative paths, submodule
     dirs (contain .git), symlinks escaping the root."""
     files, gitlinks, escapes = [], [], []
-    root = os.path.abspath(root)
+    root = os.path.realpath(root)
     n = 0
     for dirpath, dirnames, filenames in os.walk(root, followlinks=False):
         rel = os.path.relpath(dirpath, root)
         if ".git" in dirnames or ".git" in filenames:
             if rel != ".":
                 gitlinks.append(rel)
-                dirnames[:] = [d for d in dirnames if d != ".git"]
+            dirnames[:] = [d for d in dirnames if d != ".git"]
         for name in list(dirnames) + list(filenames):
             full = os.path.join(dirpath, name)
             if os.path.islink(full):
@@ -124,10 +124,9 @@ def walk_repo(root, max_files=200000):
 
 def in_submodule(path, gitlinks):
     """Is this repo-relative path inside a gitlink directory?"""
-    for g in gitlinks:
-        if path == g or path.startswith(g + os.sep):
-            return g
-    return None
+    hits = [g for g in gitlinks
+            if path == g or path.startswith(g + os.sep)]
+    return max(hits, key=len) if hits else None
 
 
 def analyze(root, opts=None):
