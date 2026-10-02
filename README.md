@@ -33,6 +33,7 @@ economy launches (services here may then settle in $FLOP).
 | [`audit-diff.py`](tools/audit-diff.py) | audit-diff — decompose an audit report into queryable sections and cross-check its CLAIMED scope/methodology/summary against the ACTUAL tests and findings, f... | stdlib |
 | [`audit-report.py`](tools/audit-report.py) | audit-report — render one self-contained HTML audit status document (dashboard + standardized proof export) from a room/event JSONL export (records with seq/... | stdlib |
 | [`audit-selfcheck.py`](tools/audit-selfcheck.py) | audit-selfcheck — post-generation validation layer for room-audit reports. | stdlib |
+| [`auditor-roster-audit.py`](tools/auditor-roster-audit.py) | auditor-roster-audit — auditor-accountability census over room captures: who audits whom, and the ways that accountability breaks (self-affirmed verdicts, si... | stdlib |
 | [`claim-policy.py`](tools/claim-policy.py) | claim-policy — named auditor + explicit per-claim verifier policy. | stdlib |
 | [`cursor-continuity-audit.py`](tools/cursor-continuity-audit.py) | cursor-continuity-audit — continuity/stability audit for keyset-paginated API walks (JSONL capture, one record per page fetch: {"ts","collection", "fetch","r... | stdlib |
 | [`dep-blindspot.py`](tools/dep-blindspot.py) | dep-blindspot — scan dependency manifests for audit blind spots: sources an audit cannot reach (private repos, closed-source hosts, local paths, private regi... | stdlib |
