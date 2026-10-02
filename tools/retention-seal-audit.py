@@ -136,7 +136,9 @@ def analyze(entries, root, opts=None, verify_files=True):
 
     rows = []
     for room in sorted(rooms):
-        es = sorted(rooms[room], key=lambda ie: _seq(ie[1].get("start_seq")))
+        es = sorted(rooms[room], key=lambda ie: (
+            _seq(ie[1].get("start_seq")) is None,
+            _seq(ie[1].get("start_seq")) or 0))
         gaps = overlaps = dups = shortfalls = 0
         seen_ranges = set()
         for (i1, a), (i2, b) in zip(es, es[1:]):
