@@ -78,8 +78,13 @@ def epoch_of(row):
     if not isinstance(kid, str) or not kid or not isinstance(svc, str) \
             or not svc or nb is None:
         return None
-    na = _num(row.get("not_after"))
-    return (kid, svc, nb, INF if na is None else na)
+    raw_na = row.get("not_after")
+    if raw_na is None:
+        return (kid, svc, nb, INF)
+    na = _num(raw_na)
+    if na is None:
+        return None
+    return (kid, svc, nb, na)
 
 
 def registry_facts(rows, now, grace, max_age):
@@ -131,7 +136,7 @@ def registry_facts(rows, now, grace, max_age):
                         severity="BLOCK", kind="epoch-overlap", service=svc,
                         detail="service %s: keys %s and %s both active "
                                "%.0fs beyond grace %ds"
-                               % (svc, ka, kb, ov, grace)))
+                               % (svc, ka, kb, ov - grace, grace)))
         # coverage-gap: hole between consecutive epochs of one service
         end, prev_kid = None, "?"
         for kid, _sv, start, stop in sorted(eps, key=lambda e: e[2]):
