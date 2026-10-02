@@ -133,7 +133,7 @@ def analyze(files, opts=None):
                 f"{os.path.basename(path)}: window_hours="
                 f"{doc['_window_mismatch']} (expected 24)",
                 source=path)
-        fday = date.fromisoformat(day) if len(day) == 10 else None
+        fday = day_of_ts(day)
         for room, rec in sorted(doc["rooms"].items()):
             if not isinstance(rec, dict):
                 continue
@@ -146,7 +146,9 @@ def analyze(files, opts=None):
                             f"{room}: {k} {rec[k][:10]} vs digest date "
                             f"{day} (off {abs((d - fday).days)}d)",
                             source=path, room=room)
-    last_day = days[-1][0] if days else None
+    last_day = next((d for d, _p, doc in reversed(days)
+                     if doc is not None and day_of_ts(d) is not None),
+                    None)
     rows = []
     for room, evs in sorted(per_room.items()):
         msgs = [r.get("messages") for _d, _p, r in evs
