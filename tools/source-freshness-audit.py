@@ -46,7 +46,7 @@ import glob as _glob
 import json
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 
 DEF = dict(stale_hours=24.0, hole_hours=6.0, lag_hours=6.0,
            regress_mins=30.0, limit=20)
@@ -68,9 +68,8 @@ def epoch(v):
 
 
 def iso(t):
-    return datetime.fromtimestamp(t,
-                                  tz=datetime.now().astimezone().tzinfo
-                                  ).isoformat(timespec="seconds")
+    return datetime.fromtimestamp(
+        t, tz=timezone.utc).isoformat(timespec="seconds")
 
 
 def scan_file(path):
@@ -215,6 +214,10 @@ def render(findings, stats, limit=20):
         if s["records"] == 0:
             print(f"  {os.path.basename(s['path']):30s} EMPTY")
             continue
+        if s["first"] is None or s["last"] is None:
+            print(f"  {os.path.basename(s['path']):30s} n={s['records']:7d} "
+                  f"ts (none)")
+            continue
         fi, fsq, ft = s["first"]
         li, lsq, lt = s["last"]
         print(f"  {os.path.basename(s['path']):30s} n={s['records']:7d} "
@@ -226,6 +229,8 @@ def expand(paths):
     out = []
     for p in paths:
         hits = sorted(_glob.glob(p)) if any(c in p for c in "*?[") else [p]
+        if not hits:
+            hits = [p]
         for h in hits:
             if h not in out:
                 out.append(h)
@@ -260,8 +265,7 @@ def main(argv=None):
                     help="emit findings + source stats as JSON")
     args = ap.parse_args(argv)
     files = expand(args.captures)
-    bad = [f for f in files
-           if not (os.path.isfile(f) or any(c in f for c in "*?["))]
+    bad = [f for f in files if not os.path.isfile(f)]
     if bad:
         print(f"error: cannot read {bad[0]}", file=sys.stderr)
         return 2
