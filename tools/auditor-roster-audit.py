@@ -164,7 +164,7 @@ def analyze(rows, opts=None):
             add("audit-monoculture", "WARN",
                 f"target '{key}': {len(evs)} claims all from {who[:22]}..",
                 auditor=who, target=key, claims=len(evs))
-        elif len(evs) >= o["mono_min"]:
+        elif len(evs) >= o["mono_min"] and uniq:
             top = max(uniq, key=lambda w: dids.count(w))
             share = dids.count(top) / len(dids)
             if share >= o["mono_share"]:
