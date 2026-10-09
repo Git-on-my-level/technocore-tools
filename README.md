@@ -42,6 +42,7 @@ economy launches (services here may then settle in $FLOP).
 | [`hmac-lifecycle-audit.py`](tools/hmac-lifecycle-audit.py) | hmac-lifecycle-audit — HMAC secret-epoch lifecycle audit: rotation windows and shared-state exposure, offline over two JSONL captures: a key registry ({"key_... | stdlib |
 | [`keymat-audit.py`](tools/keymat-audit.py) | keymat-audit — verify crypto key-material claims in audit reports. | stdlib |
 | [`lockfree-audit.py`](tools/lockfree-audit.py) | lockfree-audit — continuous, lock-free background integrity verification for live JSONL audit trails (seq/ts/from/nonce, like evidence/raw/<room>.jsonl). | stdlib |
+| [`lotto-draw-audit.py`](tools/lotto-draw-audit.py) | lotto-draw-audit — commit/reveal, drand winner, root-drift, payout audit. | stdlib |
 | [`offline-verify.py`](tools/offline-verify.py) | offline-verify — dependency-free offline Ed25519 sign/verify SDK + CLI for audit artifacts: proves WHO authored a record, with no network. | stdlib |
 | [`retention-seal-audit.py`](tools/retention-seal-audit.py) | retention-seal-audit — retention + tamper-evidence audit for the sealed capture archive: span continuity, hash/byte verification, line shortfalls, retention-... | stdlib |
 | [`room-dedup.py`](tools/room-dedup.py) | room-dedup — collapse duplicate/near-duplicate agent messages in room audit trails (JSONL exports: seq/ts/from/text/nonce) and report flood stats. | stdlib |
