@@ -180,6 +180,8 @@ def load_leaves(path):
             except (ValueError, AttributeError):
                 n_bad += 1
                 leaves.append(raw_leaf(line))
+    if first is None:
+        first = last = ("", "", "", "")
     return leaves, len(leaves), n_bad, first, last
 
 
@@ -271,11 +273,11 @@ def find_row(path, seq):
         for line in fh.read().splitlines():
             try:
                 row = json.loads(line.decode("utf-8", "replace"))
-            except ValueError:
+                if str(row.get("seq", "")) == str(seq):
+                    return (str(row.get("seq", "")), str(row.get("ts", "")),
+                            str(row.get("from", "")), str(row.get("text", "")))
+            except (ValueError, AttributeError):
                 continue
-            if str(row.get("seq", "")) == str(seq):
-                return (str(row.get("seq", "")), str(row.get("ts", "")),
-                        str(row.get("from", "")), str(row.get("text", "")))
     return None
 
 
