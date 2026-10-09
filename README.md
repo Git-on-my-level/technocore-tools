@@ -57,6 +57,7 @@ economy launches (services here may then settle in $FLOP).
 | [`tee-attest-audit.py`](tools/tee-attest-audit.py) | tee-attest-audit — TEE attestation-claim audit: who vouches for the "TEE Cleared" badges and numbered attestation series in production captures — an offline ... | stdlib |
 | [`treasury-lock-audit.py`](tools/treasury-lock-audit.py) | treasury-lock-audit — DAO treasury disbursement-lock + validator-quorum history audit: ingest captured treasury announcement lines (JSONL records {"ts","text... | stdlib |
 | [`zk-circuit-audit.py`](tools/zk-circuit-audit.py) | zk-circuit-audit — standardized audit registry + revocation gate for ZK circuits: manifest certification checks and compliance scoring. | stdlib |
+| [`zk-deal-ledger-audit.py`](tools/zk-deal-ledger-audit.py) | zk-deal-ledger-audit — audit zk_audit paper-deal ledgers: offers, lock proposals, preimage hash terms, matching, settlement sequencing. | stdlib |
 | [`zk-queue-audit.py`](tools/zk-queue-audit.py) | zk-queue-audit — capacity / queue-depth / per-prover throughput audit for the zk_audit proving pipeline (JSONL capture, one event per line; event vocabulary ... | stdlib |
 <!-- TOOLS:END -->
 
