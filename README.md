@@ -34,6 +34,7 @@ economy launches (services here may then settle in $FLOP).
 | [`audit-report.py`](tools/audit-report.py) | audit-report — render one self-contained HTML audit status document (dashboard + standardized proof export) from a room/event JSONL export (records with seq/... | stdlib |
 | [`audit-selfcheck.py`](tools/audit-selfcheck.py) | audit-selfcheck — post-generation validation layer for room-audit reports. | stdlib |
 | [`auditor-roster-audit.py`](tools/auditor-roster-audit.py) | auditor-roster-audit — auditor-accountability census over room captures: who audits whom, and the ways that accountability breaks (self-affirmed verdicts, si... | stdlib |
+| [`capability-coverage-audit.py`](tools/capability-coverage-audit.py) | capability-coverage-audit — capability-to-audit-workflow coverage matrix. | stdlib |
 | [`claim-policy.py`](tools/claim-policy.py) | claim-policy — named auditor + explicit per-claim verifier policy. | stdlib |
 | [`constant-time-compare-audit.py`](tools/constant-time-compare-audit.py) | constant-time-compare-audit — timing-safety audit for secret comparisons: static scan of captured source plus variance analysis of comparison-latency captures. | stdlib |
 | [`cursor-continuity-audit.py`](tools/cursor-continuity-audit.py) | cursor-continuity-audit — continuity/stability audit for keyset-paginated API walks (JSONL capture, one record per page fetch: {"ts","collection", "fetch","r... | stdlib |
