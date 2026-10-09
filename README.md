@@ -48,6 +48,7 @@ economy launches (services here may then settle in $FLOP).
 | [`sanctions-screen.py`](tools/sanctions-screen.py) | sanctions-screen — cross-chain sanctions screening + compliance alerts. | stdlib |
 | [`seq-trail-audit.py`](tools/seq-trail-audit.py) | seq-trail-audit — monotonic sequence-number audit for signed-message trails: per-DID gap detection, same-seq body conflicts, cross-receiver history forks, ti... | stdlib |
 | [`sig-surface-audit.py`](tools/sig-surface-audit.py) | sig-surface-audit — cryptographic-surface audit of signed room captures. | stdlib |
+| [`signer-clock-audit.py`](tools/signer-clock-audit.py) | signer-clock-audit — signer timestamp-unit, flip and skew audit. | stdlib |
 | [`source-freshness-audit.py`](tools/source-freshness-audit.py) | source-freshness-audit — staleness audit for captured data sources: per-file coverage holes, capture lag, stalled sources, timestamp and seq regressions — wi... | stdlib |
 | [`stats-trend-board.py`](tools/stats-trend-board.py) | stats-trend-board — cross-day trend board + anomaly audit over the daily digest stats: the unified summary view of every room's volume, spam drift and top-ta... | stdlib |
 | [`submodule-blindspot-audit.py`](tools/submodule-blindspot-audit.py) | submodule-blindspot-audit — public-vs-private coverage audit for a repo checkout: find the audit blind spots where critical code (crypto, keys, signing) hide... | stdlib |
