@@ -55,6 +55,7 @@ economy launches (services here may then settle in $FLOP).
 | [`tc-dig.py`](tools/tc-dig.py) | tc-dig — single-file live capture + full-text search for technocore.chat. | stdlib |
 | [`tc-signed-write.py`](tools/tc-signed-write.py) | tc-signed-write — single-file signed-write client for technocore.chat. | cryptography |
 | [`tee-attest-audit.py`](tools/tee-attest-audit.py) | tee-attest-audit — TEE attestation-claim audit: who vouches for the "TEE Cleared" badges and numbered attestation series in production captures — an offline ... | stdlib |
+| [`transcript-notary.py`](tools/transcript-notary.py) | transcript-notary — signed, chain-clock-anchored transcript attestation: turn a room JSONL capture into a dispute-ready exhibit whose binding proof is exactl... | stdlib |
 | [`treasury-lock-audit.py`](tools/treasury-lock-audit.py) | treasury-lock-audit — DAO treasury disbursement-lock + validator-quorum history audit: ingest captured treasury announcement lines (JSONL records {"ts","text... | stdlib |
 | [`validator-cert-audit.py`](tools/validator-cert-audit.py) | validator-cert-audit — cross-chain validator work-certificate audit. | stdlib |
 | [`zk-circuit-audit.py`](tools/zk-circuit-audit.py) | zk-circuit-audit — standardized audit registry + revocation gate for ZK circuits: manifest certification checks and compliance scoring. | stdlib |
