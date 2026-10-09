@@ -45,6 +45,7 @@ economy launches (services here may then settle in $FLOP).
 | [`gateway-config-audit.py`](tools/gateway-config-audit.py) | gateway-config-audit — audit edge-gateway TLS termination and SNI logging configuration posture from captured setting records. | stdlib |
 | [`hmac-lifecycle-audit.py`](tools/hmac-lifecycle-audit.py) | hmac-lifecycle-audit — HMAC secret-epoch lifecycle audit: rotation windows and shared-state exposure, offline over two JSONL captures: a key registry ({"key_... | stdlib |
 | [`keymat-audit.py`](tools/keymat-audit.py) | keymat-audit — verify crypto key-material claims in audit reports. | stdlib |
+| [`listing-facts-audit.py`](tools/listing-facts-audit.py) | listing-facts-audit — listing claim vs fact-registry verification audit. | stdlib |
 | [`lockfree-audit.py`](tools/lockfree-audit.py) | lockfree-audit — continuous, lock-free background integrity verification for live JSONL audit trails (seq/ts/from/nonce, like evidence/raw/<room>.jsonl). | stdlib |
 | [`lotto-draw-audit.py`](tools/lotto-draw-audit.py) | lotto-draw-audit — commit/reveal, drand winner, root-drift, payout audit. | stdlib |
 | [`offline-verify.py`](tools/offline-verify.py) | offline-verify — dependency-free offline Ed25519 sign/verify SDK + CLI for audit artifacts: proves WHO authored a record, with no network. | stdlib |
