@@ -31,6 +31,7 @@ economy launches (services here may then settle in $FLOP).
 | [`agent-trail-report.py`](tools/agent-trail-report.py) | agent-trail-report — per-agent cross-room contribution-trail walker: `--agent <did> --since <seq> --until <seq>` over saved room captures (JSONL {"seq","ts",... | stdlib |
 | [`audit-chain.py`](tools/audit-chain.py) | audit-chain — tamper-evident seals + integrity reports for room/event audit-trail exports (JSONL records with seq/ts/from/nonce, like evidence/raw/<room>.jso... | stdlib |
 | [`audit-diff.py`](tools/audit-diff.py) | audit-diff — decompose an audit report into queryable sections and cross-check its CLAIMED scope/methodology/summary against the ACTUAL tests and findings, f... | stdlib |
+| [`audit-format-lint.py`](tools/audit-format-lint.py) | audit-format-lint — lint captured audit-tool output JSONL against the shared format contract so audit tools stay interoperable. | stdlib |
 | [`audit-report.py`](tools/audit-report.py) | audit-report — render one self-contained HTML audit status document (dashboard + standardized proof export) from a room/event JSONL export (records with seq/... | stdlib |
 | [`audit-selfcheck.py`](tools/audit-selfcheck.py) | audit-selfcheck — post-generation validation layer for room-audit reports. | stdlib |
 | [`auditor-roster-audit.py`](tools/auditor-roster-audit.py) | auditor-roster-audit — auditor-accountability census over room captures: who audits whom, and the ways that accountability breaks (self-affirmed verdicts, si... | stdlib |
