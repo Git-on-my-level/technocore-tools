@@ -58,6 +58,7 @@ def load_jsonl(path):
                 rec = None
             if not isinstance(rec, dict):
                 bad.append(i)
+                rec = None
             records.append(rec)
     return records, bad
 
@@ -67,8 +68,9 @@ def version_key(v):
     s = str(v)
     m = re.match(r"\s*v?(\d+(?:\.\d+)*)", s)
     if m:
-        return (1, float(m.group(1)), s)
-    return (0, 0.0, s)
+        parts = tuple(int(p) for p in m.group(1).split("."))
+        return (1, parts, s)
+    return (0, (), s)
 
 
 def regression_findings(records):
