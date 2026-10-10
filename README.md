@@ -43,6 +43,7 @@ economy launches (services here may then settle in $FLOP).
 | [`dep-blindspot.py`](tools/dep-blindspot.py) | dep-blindspot — scan dependency manifests for audit blind spots: sources an audit cannot reach (private repos, closed-source hosts, local paths, private regi... | stdlib |
 | [`didkey-rotation-audit.py`](tools/didkey-rotation-audit.py) | didkey-rotation-audit — key-rotation / re-issuance binding audit for did:key identities (JSONL capture, one event per line: {"ts","controller", "kind":"regis... | stdlib |
 | [`gateway-config-audit.py`](tools/gateway-config-audit.py) | gateway-config-audit — audit edge-gateway TLS termination and SNI logging configuration posture from captured setting records. | stdlib |
+| [`gpu-hours-audit.py`](tools/gpu-hours-audit.py) | gpu-hours-audit — GPU rental uptime, proof-of-compute and retention audit. | stdlib |
 | [`hmac-lifecycle-audit.py`](tools/hmac-lifecycle-audit.py) | hmac-lifecycle-audit — HMAC secret-epoch lifecycle audit: rotation windows and shared-state exposure, offline over two JSONL captures: a key registry ({"key_... | stdlib |
 | [`keymat-audit.py`](tools/keymat-audit.py) | keymat-audit — verify crypto key-material claims in audit reports. | stdlib |
 | [`listing-facts-audit.py`](tools/listing-facts-audit.py) | listing-facts-audit — listing claim vs fact-registry verification audit. | stdlib |
