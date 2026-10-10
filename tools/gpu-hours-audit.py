@@ -71,7 +71,8 @@ def load_jsonl(path):
     return records, bad
 
 def _gid(rec):
-    return str(rec.get("gpu_id") or "?")
+    gid = rec.get("gpu_id")
+    return str(gid) if gid not in (None, "") else "?"
 
 def scan_gpus(records):
     """Per-gpu scan -> {gpu: {"windows","overlaps","unclosed","horizon"}}.
