@@ -118,23 +118,25 @@ def slash_findings(records):
         if not s or not d:
             continue
         if ev == "violation":
-            viol.setdefault((s, d), []).append(ts)
+            viol.setdefault((s, d), []).append((ts, i))
         elif ev == "slash":
             slashes.setdefault((s, d), []).append((ts, i))
     out = []
     for key in sorted(slashes):
         vts, matched = sorted(viol.get(key, [])), set()
         for ts, _i in sorted(slashes[key]):
-            prior = [t for t in vts if t <= ts]
+            prior = [v for v in vts if v[0] <= ts]
             if not prior:
                 out.append(_f(BLOCK, "orphan-slash", "%s/%s" % key,
                               "slash at t=%.0f with no prior violation" % ts))
                 continue
-            if prior[-1] in matched:
+            unused = [v for v in prior if v not in matched]
+            target = unused[-1] if unused else prior[-1]
+            if target in matched:
                 out.append(_f(BLOCK, "double-slash", "%s/%s" % key,
                               "violation at t=%.0f slashed more than once"
-                              % prior[-1]))
-            matched.add(prior[-1])
+                              % target[0]))
+            matched.add(target)
     return out
 
 def window_findings(records, default_window_h=DEFAULT_WINDOW_H):
