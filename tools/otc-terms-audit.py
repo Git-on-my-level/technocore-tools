@@ -202,10 +202,11 @@ def disclosure_findings(records):
         v = r.get("venue")
         if not isinstance(v, str) or not v.strip():
             continue
-        slot = venues.setdefault(v.strip(), {"activity": 0, "have": set()})
+        slot = venues.setdefault(v.strip(), {"activity": 0, "have": set(), "seen": False})
         if r.get("event") in ACTIVITY:
             slot["activity"] += 1
         elif r.get("event") == "disclosed":
+            slot["seen"] = True
             flags = r.get("disclosure") if isinstance(r.get("disclosure"), dict) else {}
             for k in FLAGS:
                 if flags.get(k) is True:
@@ -215,7 +216,7 @@ def disclosure_findings(records):
         if slot["activity"] <= 0:
             continue
         missing = [k for k in FLAGS if k not in slot["have"]]
-        if not slot["have"]:
+        if not slot["seen"]:
             out.append(_f("WARN", "no-disclosure", v,
                           "venue has volume_push/executed activity but no "
                           "disclosed record at all"))
