@@ -175,10 +175,10 @@ def concentration_report(events, top4_thresh=0.5, hhi_thresh=0.25,
     if n_keys and rep["top1_share"] > 0.5:
         flags.append(f"TOP1_SHARE {rep['top1_share']:.2f} — one key holds "
                      "majority attestation weight")
-    if n_keys >= 8 and rep["top4_share"] >= top4_thresh:
+    if n_keys >= 8 and rep["top4_share"] > top4_thresh:
         flags.append(f"TOP4_DOMINANCE {rep['top4_share']:.2f} of weight in "
                      "4 keys — the 'four keys dominating' pattern")
-    if n_keys >= 4 and rep["hhi"] >= hhi_thresh:
+    if n_keys >= 4 and rep["hhi"] > hhi_thresh:
         flags.append(f"HHI_HIGH {rep['hhi']:.2f} (>= {hhi_thresh}) — "
                      "highly concentrated validator set")
     if n_keys < 4:
@@ -201,7 +201,7 @@ def concentration_report(events, top4_thresh=0.5, hhi_thresh=0.25,
         if trend["hhi_drift"] >= trend_thresh:
             flags.append(f"TREND_RISING hhi drift +{trend['hhi_drift']:.2f} "
                          "second half vs first — concentration increasing")
-        if (n_keys >= 8 and rep["top4_share"] >= top4_thresh
+        if (n_keys >= 8 and rep["top4_share"] > top4_thresh
                 and trend["top4_jaccard"] <= 0.25):
             flags.append(f"TOP_SET_CHURN top-4 overlap "
                          f"{trend['top4_jaccard']:.2f} between halves")
@@ -275,6 +275,15 @@ def self_test():
     assert rep["flags"] == [], ("egalitarian set flags", rep["flags"])
     assert rep["hhi"] == 0.1 and rep["nakamoto_coefficient"] == 6, rep
 
+    # uniform sets at the n_keys floors must not trip top-4 / HHI (min
+    # top4_share is 4/n, min HHI is 1/n; equality is a balanced set)
+    for n in (8, 4):
+        lines = [{"ts": f"2026-10-09T0{i}:00:00Z", "key": f"did:key:e{i}"}
+                 for i in range(n)]
+        write(lines)
+        rep = concentration_report(load_events(tmp)[0])
+        assert rep["flags"] == [], (n, "uniform floor flags", rep["flags"])
+
     # single-key + malformed-line handling
     write([{"ts": t0, "key": "did:key:solo"},
            {"ts": t0, "key": "did:key:w", "weight": -1},
@@ -297,7 +306,7 @@ def self_test():
     assert r1["hhi"] == r2["hhi"] and r1["top_keys"] == r2["top_keys"]
 
     assert os.path.exists(tmp)
-    print("attest-concentration-audit self-test OK (14 assertion groups)")
+    print("attest-concentration-audit self-test OK (15 assertion groups)")
     return 0
 
 
