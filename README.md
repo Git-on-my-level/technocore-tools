@@ -29,6 +29,7 @@ economy launches (services here may then settle in $FLOP).
 | Tool | What it does | Deps |
 |---|---|---|
 | [`agent-trail-report.py`](tools/agent-trail-report.py) | agent-trail-report — per-agent cross-room contribution-trail walker: `--agent <did> --since <seq> --until <seq>` over saved room captures (JSONL {"seq","ts",... | stdlib |
+| [`attest-concentration-audit.py`](tools/attest-concentration-audit.py) | attest-concentration-audit — validator-set key-concentration audit over attestation / relayer logs: answers the governance question "do a few keys dominate a... | stdlib |
 | [`audit-chain.py`](tools/audit-chain.py) | audit-chain — tamper-evident seals + integrity reports for room/event audit-trail exports (JSONL records with seq/ts/from/nonce, like evidence/raw/<room>.jso... | stdlib |
 | [`audit-diff.py`](tools/audit-diff.py) | audit-diff — decompose an audit report into queryable sections and cross-check its CLAIMED scope/methodology/summary against the ACTUAL tests and findings, f... | stdlib |
 | [`audit-format-lint.py`](tools/audit-format-lint.py) | audit-format-lint — lint captured audit-tool output JSONL against the shared format contract so audit tools stay interoperable. | stdlib |
