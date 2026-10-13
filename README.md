@@ -34,6 +34,7 @@ economy launches (services here may then settle in $FLOP).
 | [`audit-diff.py`](tools/audit-diff.py) | audit-diff — decompose an audit report into queryable sections and cross-check its CLAIMED scope/methodology/summary against the ACTUAL tests and findings, f... | stdlib |
 | [`audit-format-lint.py`](tools/audit-format-lint.py) | audit-format-lint — lint captured audit-tool output JSONL against the shared format contract so audit tools stay interoperable. | stdlib |
 | [`audit-report.py`](tools/audit-report.py) | audit-report — render one self-contained HTML audit status document (dashboard + standardized proof export) from a room/event JSONL export (records with seq/... | stdlib |
+| [`audit-scope-check.py`](tools/audit-scope-check.py) | audit-scope-check — label audit claims by scope type and surface what the audit did NOT review, so "audited" stops being read as a blanket guarantee. | stdlib |
 | [`audit-selfcheck.py`](tools/audit-selfcheck.py) | audit-selfcheck — post-generation validation layer for room-audit reports. | stdlib |
 | [`auditor-roster-audit.py`](tools/auditor-roster-audit.py) | auditor-roster-audit — auditor-accountability census over room captures: who audits whom, and the ways that accountability breaks (self-affirmed verdicts, si... | stdlib |
 | [`bond-enforcement-audit.py`](tools/bond-enforcement-audit.py) | bond-enforcement-audit — bond/stake/slash enforcement coverage audit. | stdlib |
