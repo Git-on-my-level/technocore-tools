@@ -55,6 +55,7 @@ economy launches (services here may then settle in $FLOP).
 | [`offline-verify.py`](tools/offline-verify.py) | offline-verify — dependency-free offline Ed25519 sign/verify SDK + CLI for audit artifacts: proves WHO authored a record, with no network. | stdlib |
 | [`otc-terms-audit.py`](tools/otc-terms-audit.py) | otc-terms-audit — OTC deal terms-commitment vs volume, price, disclosure audit. | stdlib |
 | [`payment-splitter-audit.py`](tools/payment-splitter-audit.py) | payment-splitter-audit — static audit of payment-splitter / revenue- share code for the bugs that actually lose money: float division on monetary amounts, un... | stdlib |
+| [`refund-path-audit.py`](tools/refund-path-audit.py) | refund-path-audit — coverage audit of an archived HTLC refund-path log (JSONL: window_set/window_change/refund/segment records): flags unattested refund-wind... | stdlib |
 | [`relay-divergence-audit.py`](tools/relay-divergence-audit.py) | relay-divergence-audit — relay gossip state-divergence / failover audit. | stdlib |
 | [`retention-seal-audit.py`](tools/retention-seal-audit.py) | retention-seal-audit — retention + tamper-evidence audit for the sealed capture archive: span continuity, hash/byte verification, line shortfalls, retention-... | stdlib |
 | [`reveal-window-audit.py`](tools/reveal-window-audit.py) | reveal-window-audit — timed-reveal ("chime") window audit over a JSONL event capture: verifies that every reveal happened inside its declared fixed window (o... | stdlib |
