@@ -48,6 +48,7 @@ economy launches (services here may then settle in $FLOP).
 | [`gateway-config-audit.py`](tools/gateway-config-audit.py) | gateway-config-audit — audit edge-gateway TLS termination and SNI logging configuration posture from captured setting records. | stdlib |
 | [`gpu-hours-audit.py`](tools/gpu-hours-audit.py) | gpu-hours-audit — GPU rental uptime, proof-of-compute and retention audit. | stdlib |
 | [`hmac-lifecycle-audit.py`](tools/hmac-lifecycle-audit.py) | hmac-lifecycle-audit — HMAC secret-epoch lifecycle audit: rotation windows and shared-state exposure, offline over two JSONL captures: a key registry ({"key_... | stdlib |
+| [`job-coalesce-audit.py`](tools/job-coalesce-audit.py) | job-coalesce-audit — audit a job/offer queue for identical reposts: which repeated jobs coalesce, which repost storms went unserved, and which executions wer... | stdlib |
 | [`keymat-audit.py`](tools/keymat-audit.py) | keymat-audit — verify crypto key-material claims in audit reports. | stdlib |
 | [`listing-facts-audit.py`](tools/listing-facts-audit.py) | listing-facts-audit — listing claim vs fact-registry verification audit. | stdlib |
 | [`lockfree-audit.py`](tools/lockfree-audit.py) | lockfree-audit — continuous, lock-free background integrity verification for live JSONL audit trails (seq/ts/from/nonce, like evidence/raw/<room>.jsonl). | stdlib |
