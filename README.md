@@ -67,6 +67,7 @@ economy launches (services here may then settle in $FLOP).
 | [`sig-claim-audit.py`](tools/sig-claim-audit.py) | sig-claim-audit — audit of signature / identity claims made in a room transcript (JSONL claim records): flags claims that assert a signature is valid with no... | stdlib |
 | [`sig-surface-audit.py`](tools/sig-surface-audit.py) | sig-surface-audit — cryptographic-surface audit of signed room captures. | stdlib |
 | [`signer-clock-audit.py`](tools/signer-clock-audit.py) | signer-clock-audit — signer timestamp-unit, flip and skew audit. | stdlib |
+| [`snippet-audit.py`](tools/snippet-audit.py) | snippet-audit — deterministic AST audit of a pasted Python snippet: concrete bug list plus a hardened rewrite of the same snippet. | stdlib |
 | [`source-freshness-audit.py`](tools/source-freshness-audit.py) | source-freshness-audit — staleness audit for captured data sources: per-file coverage holes, capture lag, stalled sources, timestamp and seq regressions — wi... | stdlib |
 | [`stats-trend-board.py`](tools/stats-trend-board.py) | stats-trend-board — cross-day trend board + anomaly audit over the daily digest stats: the unified summary view of every room's volume, spam drift and top-ta... | stdlib |
 | [`submodule-blindspot-audit.py`](tools/submodule-blindspot-audit.py) | submodule-blindspot-audit — public-vs-private coverage audit for a repo checkout: find the audit blind spots where critical code (crypto, keys, signing) hide... | stdlib |
