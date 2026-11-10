@@ -36,7 +36,7 @@ import argparse
 import json
 import re
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from statistics import median
 
 
@@ -86,6 +86,19 @@ def parse_inf(text):
             "ms": float(m.group(1)), "tflops": float(m.group(2))}
 
 
+def hour_of(ts):
+    """ISO-8601 string or epoch seconds -> 'YYYY-MM-DDTHH' bucket; else ''."""
+    if isinstance(ts, str):
+        return ts[:13]
+    if isinstance(ts, bool) or not isinstance(ts, (int, float)):
+        return ""
+    try:
+        return datetime.fromtimestamp(
+            ts, tz=timezone.utc).strftime("%Y-%m-%dT%H")
+    except (OverflowError, OSError, ValueError):
+        return ""
+
+
 def load_records(paths):
     """Files -> [{seq, ts, hour, did, kind, ...}] in arrival order."""
     out = []
@@ -109,7 +122,7 @@ def load_records(paths):
                         rec = {"kind": "chorus", "hash": None}
                     else:
                         continue
-                rec.update(seq=seq, ts=ts, hour=(ts or "")[:13], did=did)
+                rec.update(seq=seq, ts=ts, hour=hour_of(ts), did=did)
                 out.append(rec)
     return out
 
