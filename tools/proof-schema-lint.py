@@ -46,7 +46,7 @@ KNOWN_ALGOS = {"sha256", "sha3-256", "blake2b", "keccak256", "poseidon"}
 GRANULARITIES = {"s": 1, "ms": 1e3, "ns": 1e9}
 # plausible epoch-magnitude bands (upper bounds) per granularity
 _EPOCH_NOW = 1.8e9
-GRAN_BANDS = {"s": (1e8, 1e10), "ms": (1e11, 1e13), "ns": (1e15, 1e19)}
+GRAN_BANDS = {"s": (1e8, 1e10), "ms": (1e11, 1e13), "ns": (1e17, 1e19)}
 _ISO = re.compile(r"^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}"
                   r"(\.\d+)?(Z|[+-]\d{2}:?\d{2})$")
 _HEX = re.compile(r"^[0-9a-f]+$")
@@ -130,8 +130,19 @@ def _ts_violations(value, fmt, gran):
     """Check one timestamp value against format + granularity."""
     bad = []
     if fmt == "iso8601":
-        if not isinstance(value, str) or not _ISO.match(value):
+        m = _ISO.match(value) if isinstance(value, str) else None
+        if m is None:
             bad.append("not iso8601 (%r)" % (value,))
+            return bad
+        # Declared unit pins fractional width (s=0, ms=3, ns=9).
+        # None (granularity omitted) stays format-only.
+        if gran in GRANULARITIES:
+            frac = m.group(1)
+            digits = len(frac) - 1 if frac else 0
+            want = {"s": 0, "ms": 3, "ns": 9}[gran]
+            if digits != want:
+                bad.append("fractional digits %d != %s granularity "
+                           "(%d)" % (digits, gran, want))
         return bad
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         bad.append("epoch timestamp not numeric (%r)" % (value,))
@@ -157,7 +168,8 @@ def verify_proofs(schema, records, parse_errors):
     tsc = schema.get("timestamp", {}) if isinstance(schema, dict) else {}
     ts_field = tsc.get("field", "ts")
     fmt = tsc.get("format", "epoch")
-    gran = tsc.get("granularity", "s")
+    # Epoch granularity is required (default s). ISO granularity is optional.
+    gran = tsc.get("granularity", None if fmt == "iso8601" else "s")
     root_c = schema.get("merkle_root", {}) if isinstance(schema, dict) \
         else {}
     rwidth = root_c.get("width", 64)
@@ -187,7 +199,7 @@ def verify_proofs(schema, records, parse_errors):
                         % (algo, sorted(algos)))
         root = rec.get("merkle_root")
         if root is not None:
-            if not isinstance(root, str) or not _HEX.match(root.lower()):
+            if not isinstance(root, str) or not _HEX.match(root):
                 viol.append("merkle_root not lowercase-hex (%r)" % (root,))
             elif len(root) != rwidth:
                 viol.append("merkle_root width %d != schema %d"
@@ -313,6 +325,62 @@ def self_test():
     ires = {f["proof"] for f in verify_proofs(iso_schema, iso_proofs,
                                               [])}
     assert "q1" not in ires and "q2" in ires, ires
+
+    # uppercase / mixed-case roots are not the lowercase-hex encoding
+    case_proofs = [
+        dict(proofs[0], proof_id="p7", merkle_root=root64.upper()),
+        dict(proofs[0], proof_id="p8", merkle_root="Ab" * 32),
+    ]
+    cres = {f["proof"]: f["violations"]
+            for f in verify_proofs(good_schema, case_proofs, [])}
+    assert any("lowercase-hex" in v for v in cres["p7"]), cres
+    assert any("lowercase-hex" in v for v in cres["p8"]), cres
+
+    # ns band is the seconds window scaled by 1e9; microseconds must not pass
+    ns_schema = dict(good_schema)
+    ns_schema["timestamp"] = {"field": "ts", "format": "epoch",
+                              "granularity": "ns"}
+    nres = {f["proof"]: f["violations"] for f in verify_proofs(
+        ns_schema,
+        [dict(proofs[0], proof_id="n-us", ts=1762700000000000),
+         dict(proofs[0], proof_id="n-ns", ts=1762700000000000000)],
+        [])}
+    assert "n-ns" not in nres, nres
+    assert any("band" in v for v in nres["n-us"]), nres["n-us"]
+
+    # iso8601 granularity pins fractional width (omitted gran stays format-only)
+    def _when(pid, when):
+        return {"proof_id": pid, "algo": "sha256", "merkle_root": root64,
+                "when": when}
+
+    sec, milli, nano = ("2026-11-10T11:42:00Z",
+                        "2026-11-10T11:42:00.123Z",
+                        "2026-11-10T11:42:00.123456789Z")
+    iso_s = dict(iso_schema)
+    iso_s["timestamp"] = {"field": "when", "format": "iso8601",
+                          "granularity": "s"}
+    iso_ms = dict(iso_schema)
+    iso_ms["timestamp"] = {"field": "when", "format": "iso8601",
+                           "granularity": "ms"}
+    iso_ns = dict(iso_schema)
+    iso_ns["timestamp"] = {"field": "when", "format": "iso8601",
+                           "granularity": "ns"}
+    assert lint_schema(iso_s) == [] and lint_schema(iso_ns) == []
+    sres = {f["proof"] for f in verify_proofs(
+        iso_s, [_when("s-ok", sec), _when("s-bad", nano)], [])}
+    assert sres == {"s-bad"}, sres
+    mres = {f["proof"] for f in verify_proofs(
+        iso_ms, [_when("m-ok", milli), _when("m-fine", nano),
+                 _when("m-coarse", sec)], [])}
+    assert mres == {"m-fine", "m-coarse"}, mres
+    nsres = {f["proof"] for f in verify_proofs(
+        iso_ns, [_when("ns-ok", nano), _when("ns-coarse", sec),
+                 _when("ns-us", "2026-11-10T11:42:00.123456Z")], [])}
+    assert nsres == {"ns-coarse", "ns-us"}, nsres
+    # omitted granularity does not invent a fractional-width rule
+    free = {f["proof"] for f in verify_proofs(
+        iso_schema, [_when("free", nano)], [])}
+    assert "free" not in free, free
 
     # end-to-end over temp files: bad record -> rc 1; clean -> rc 0
     root = tempfile.mkdtemp(prefix="proof-schema-")
