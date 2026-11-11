@@ -40,7 +40,8 @@ import sys
 _V3 = re.compile(r"\bv?(\d+)\.(\d+)\.(\d+)\b")
 _V2_CTX = re.compile(r"\bv(\d+)\.(\d+)\b")
 _V2_WORD = re.compile(r"\bversion[ _-]?(\d+)\.(\d+)\b", re.I)
-_TAGREF = re.compile(r"^(?:refs/tags/)?v?(\d+(?:\.\d+)+)$")
+# major.minor or major.minor.patch; longer dotted names are skipped
+_TAGREF = re.compile(r"^(?:refs/tags/)?v?(\d+\.\d+(?:\.\d+)?)$")
 _DATE = re.compile(r"(\d{4}-\d{2}-\d{2})")
 
 
@@ -86,11 +87,13 @@ def extract_claims(text):
         out.append((ver, _snip(text, m.start())))
     for m in _V2_CTX.finditer(text):
         ver = norm_ver(int(m.group(1)), int(m.group(2)))
-        if _three_at(text, m.start()):
+        if _three_at(text, m.end()):
             continue  # already captured by the _V3 scan
         out.append((ver, _snip(text, m.start())))
     for m in _V2_WORD.finditer(text):
         ver = norm_ver(int(m.group(1)), int(m.group(2)))
+        if _three_at(text, m.end()):
+            continue  # already captured by the _V3 scan
         out.append((ver, _snip(text, m.start())))
     uniq = []
     for pair in out:
@@ -100,11 +103,9 @@ def extract_claims(text):
     return uniq
 
 
-def _three_at(text, pos):
-    """True when the two-part match at pos extends into a three-part one."""
-    tail = text[pos:pos + 32]
-    bits = tail.split(" ", 1)[0]
-    return bits.count(".") >= 2
+def _three_at(text, end):
+    """True when the two-part match ending at end continues as `.N`."""
+    return end + 1 < len(text) and text[end] == "." and text[end + 1].isdigit()
 
 
 def _snip(text, pos, width=48):
@@ -230,6 +231,27 @@ def self_test():
     assert any(v == "0.1.0" and "drills" not in s for v, s in claims)
     # decimal prose is not a claim
     assert "3.14" not in {v for v, _ in claims}
+    # "version 1.2.3" is that triple only — not also a phantom 1.2.0
+    assert [v for v, _ in extract_claims("version 1.2.3")] == ["1.2.3"]
+    assert [v for v, _ in extract_claims("v1.2.3")] == ["1.2.3"]
+    # a real 1.2.0 tag stays unmentioned when the README only says 1.2.3
+    hid = audit("version 1.2.3\n",
+                ["v1.2.0 2026-01-01", "v1.2.3 2026-02-02"], [])
+    assert [(f["kind"], f["version"]) for f in hid["findings"]] == [
+        ("unmentioned-tag", "1.2.0")], hid
+    # two-part claims survive newline, tab, and comma separators
+    adj = "v1.0\nv2.0\tv3.0,v4.0"
+    assert [v for v, _ in extract_claims(adj)] == [
+        "1.0.0", "2.0.0", "3.0.0", "4.0.0"]
+    kept = audit(adj + "\n", ["v1.0 2026-01-01", "v2.0 2026-02-01",
+                              "v3.0 2026-03-01", "v4.0 2026-04-01"], [])
+    assert kept["findings"] == [], kept
+    # four-or-more-part tags are skipped; two- and three-part still parse
+    assert parse_tags(["v1.2.3.4 2026-01-01T00:00:00+00:00",
+                       "refs/tags/v1.2.3.4.5 2026-02-01",
+                       "v1.2 2026-03-01",
+                       "v0.1.0 2026-09-01"]) == {
+        "1.2.0": "2026-03-01", "0.1.0": "2026-09-01"}
 
     # drill answering: the v0.1.0 tag-date question from the demand
     ver, date = answer_query("when was v0.1.0 tagged?", table)
