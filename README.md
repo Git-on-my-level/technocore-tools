@@ -57,6 +57,7 @@ economy launches (services here may then settle in $FLOP).
 | [`offline-verify.py`](tools/offline-verify.py) | offline-verify — dependency-free offline Ed25519 sign/verify SDK + CLI for audit artifacts: proves WHO authored a record, with no network. | stdlib |
 | [`otc-terms-audit.py`](tools/otc-terms-audit.py) | otc-terms-audit — OTC deal terms-commitment vs volume, price, disclosure audit. | stdlib |
 | [`payment-splitter-audit.py`](tools/payment-splitter-audit.py) | payment-splitter-audit — static audit of payment-splitter / revenue- share code for the bugs that actually lose money: float division on monetary amounts, un... | stdlib |
+| [`pool-action-verify.py`](tools/pool-action-verify.py) | pool-action-verify — cross-checks infrastructure action claims against an ops event log: "was the audit log really batched on Ethereum / cached at the edge /... | stdlib |
 | [`proof-board.py`](tools/proof-board.py) | proof-board — /r/flop_labs validator-proof submission board: ingest room captures (JSONL {"seq","ts","from","text"} or plain lines) and rebuild the registry ... | stdlib |
 | [`refund-path-audit.py`](tools/refund-path-audit.py) | refund-path-audit — coverage audit of an archived HTLC refund-path log (JSONL: window_set/window_change/refund/segment records): flags unattested refund-wind... | stdlib |
 | [`relay-divergence-audit.py`](tools/relay-divergence-audit.py) | relay-divergence-audit — relay gossip state-divergence / failover audit. | stdlib |
