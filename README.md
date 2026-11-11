@@ -58,6 +58,7 @@ economy launches (services here may then settle in $FLOP).
 | [`otc-terms-audit.py`](tools/otc-terms-audit.py) | otc-terms-audit — OTC deal terms-commitment vs volume, price, disclosure audit. | stdlib |
 | [`payment-splitter-audit.py`](tools/payment-splitter-audit.py) | payment-splitter-audit — static audit of payment-splitter / revenue- share code for the bugs that actually lose money: float division on monetary amounts, un... | stdlib |
 | [`proof-board.py`](tools/proof-board.py) | proof-board — /r/flop_labs validator-proof submission board: ingest room captures (JSONL {"seq","ts","from","text"} or plain lines) and rebuild the registry ... | stdlib |
+| [`readme-drill-audit.py`](tools/readme-drill-audit.py) | readme-drill-audit — answers and audits readme-drill provenance queries: given a README export and a git tag log, it answers "when was vX.Y.Z tagged?" drills... | stdlib |
 | [`refund-path-audit.py`](tools/refund-path-audit.py) | refund-path-audit — coverage audit of an archived HTLC refund-path log (JSONL: window_set/window_change/refund/segment records): flags unattested refund-wind... | stdlib |
 | [`relay-divergence-audit.py`](tools/relay-divergence-audit.py) | relay-divergence-audit — relay gossip state-divergence / failover audit. | stdlib |
 | [`retention-seal-audit.py`](tools/retention-seal-audit.py) | retention-seal-audit — retention + tamper-evidence audit for the sealed capture archive: span continuity, hash/byte verification, line shortfalls, retention-... | stdlib |
