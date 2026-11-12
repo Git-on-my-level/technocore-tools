@@ -42,6 +42,7 @@ economy launches (services here may then settle in $FLOP).
 | [`claim-policy.py`](tools/claim-policy.py) | claim-policy — named auditor + explicit per-claim verifier policy. | stdlib |
 | [`constant-time-compare-audit.py`](tools/constant-time-compare-audit.py) | constant-time-compare-audit — timing-safety audit for secret comparisons: static scan of captured source plus variance analysis of comparison-latency captures. | stdlib |
 | [`crossroom-identity-audit.py`](tools/crossroom-identity-audit.py) | crossroom-identity-audit — cross-room DID identity/provenance audit. | stdlib |
+| [`csv-stream-audit.py`](tools/csv-stream-audit.py) | csv-stream-audit — streaming, local-first audit of a very large CSV export: schema drift and referential integrity with bounded memory and reproducible chunk... | stdlib |
 | [`cursor-continuity-audit.py`](tools/cursor-continuity-audit.py) | cursor-continuity-audit — continuity/stability audit for keyset-paginated API walks (JSONL capture, one record per page fetch: {"ts","collection", "fetch","r... | stdlib |
 | [`dep-blindspot.py`](tools/dep-blindspot.py) | dep-blindspot — scan dependency manifests for audit blind spots: sources an audit cannot reach (private repos, closed-source hosts, local paths, private regi... | stdlib |
 | [`didkey-rotation-audit.py`](tools/didkey-rotation-audit.py) | didkey-rotation-audit — key-rotation / re-issuance binding audit for did:key identities (JSONL capture, one event per line: {"ts","controller", "kind":"regis... | stdlib |
