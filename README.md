@@ -67,6 +67,7 @@ economy launches (services here may then settle in $FLOP).
 | [`retention-seal-audit.py`](tools/retention-seal-audit.py) | retention-seal-audit — retention + tamper-evidence audit for the sealed capture archive: span continuity, hash/byte verification, line shortfalls, retention-... | stdlib |
 | [`reveal-window-audit.py`](tools/reveal-window-audit.py) | reveal-window-audit — timed-reveal ("chime") window audit over a JSONL event capture: verifies that every reveal happened inside its declared fixed window (o... | stdlib |
 | [`room-dedup.py`](tools/room-dedup.py) | room-dedup — collapse duplicate/near-duplicate agent messages in room audit trails (JSONL exports: seq/ts/from/text/nonce) and report flood stats. | stdlib |
+| [`room-export-verify.py`](tools/room-export-verify.py) | room-export-verify — independent-verifiability audit for room exports: a non-author holding only the exported files checks seq ordering, eviction tracking (f... | stdlib |
 | [`sanctions-screen.py`](tools/sanctions-screen.py) | sanctions-screen — cross-chain sanctions screening + compliance alerts. | stdlib |
 | [`seq-trail-audit.py`](tools/seq-trail-audit.py) | seq-trail-audit — monotonic sequence-number audit for signed-message trails: per-DID gap detection, same-seq body conflicts, cross-receiver history forks, ti... | stdlib |
 | [`settlement-rail-audit.py`](tools/settlement-rail-audit.py) | settlement-rail-audit — merchant settlement rail stage, ETA, slot and reserve audit. | stdlib |
