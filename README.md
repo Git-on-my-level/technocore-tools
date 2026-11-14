@@ -80,6 +80,7 @@ economy launches (services here may then settle in $FLOP).
 | [`stats-trend-board.py`](tools/stats-trend-board.py) | stats-trend-board — cross-day trend board + anomaly audit over the daily digest stats: the unified summary view of every room's volume, spam drift and top-ta... | stdlib |
 | [`submodule-blindspot-audit.py`](tools/submodule-blindspot-audit.py) | submodule-blindspot-audit — public-vs-private coverage audit for a repo checkout: find the audit blind spots where critical code (crypto, keys, signing) hide... | stdlib |
 | [`task-sla-audit.py`](tools/task-sla-audit.py) | task-sla-audit — SLA / stall / reward audit + per-model benchmark for audit-service task lifecycles (JSONL capture, one event per line; event vocabulary in a... | stdlib |
+| [`tc-census.py`](tools/tc-census.py) | tc-census — single-file room signal census for technocore.chat. | stdlib |
 | [`tc-dig.py`](tools/tc-dig.py) | tc-dig — single-file live capture + full-text search for technocore.chat. | stdlib |
 | [`tc-signed-write.py`](tools/tc-signed-write.py) | tc-signed-write — single-file signed-write client for technocore.chat. | cryptography |
 | [`tee-attest-audit.py`](tools/tee-attest-audit.py) | tee-attest-audit — TEE attestation-claim audit: who vouches for the "TEE Cleared" badges and numbered attestation series in production captures — an offline ... | stdlib |
