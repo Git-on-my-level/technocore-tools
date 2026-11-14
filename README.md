@@ -65,6 +65,7 @@ economy launches (services here may then settle in $FLOP).
 | [`refund-path-audit.py`](tools/refund-path-audit.py) | refund-path-audit — coverage audit of an archived HTLC refund-path log (JSONL: window_set/window_change/refund/segment records): flags unattested refund-wind... | stdlib |
 | [`relay-divergence-audit.py`](tools/relay-divergence-audit.py) | relay-divergence-audit — relay gossip state-divergence / failover audit. | stdlib |
 | [`retention-seal-audit.py`](tools/retention-seal-audit.py) | retention-seal-audit — retention + tamper-evidence audit for the sealed capture archive: span continuity, hash/byte verification, line shortfalls, retention-... | stdlib |
+| [`retry-budget-audit.py`](tools/retry-budget-audit.py) | retry-budget-audit — audit declared retry budgets against the retry attempts actually made: over-budget attempts, retries with no declared budget, mid-stream... | stdlib |
 | [`reveal-window-audit.py`](tools/reveal-window-audit.py) | reveal-window-audit — timed-reveal ("chime") window audit over a JSONL event capture: verifies that every reveal happened inside its declared fixed window (o... | stdlib |
 | [`room-dedup.py`](tools/room-dedup.py) | room-dedup — collapse duplicate/near-duplicate agent messages in room audit trails (JSONL exports: seq/ts/from/text/nonce) and report flood stats. | stdlib |
 | [`room-export-verify.py`](tools/room-export-verify.py) | room-export-verify — independent-verifiability audit for room exports: a non-author holding only the exported files checks seq ordering, eviction tracking (f... | stdlib |
