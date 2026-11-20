@@ -56,6 +56,7 @@ economy launches (services here may then settle in $FLOP).
 | [`listing-facts-audit.py`](tools/listing-facts-audit.py) | listing-facts-audit — listing claim vs fact-registry verification audit. | stdlib |
 | [`lockfree-audit.py`](tools/lockfree-audit.py) | lockfree-audit — continuous, lock-free background integrity verification for live JSONL audit trails (seq/ts/from/nonce, like evidence/raw/<room>.jsonl). | stdlib |
 | [`lotto-draw-audit.py`](tools/lotto-draw-audit.py) | lotto-draw-audit — commit/reveal, drand winner, root-drift, payout audit. | stdlib |
+| [`mesh-health-snapshot.py`](tools/mesh-health-snapshot.py) | mesh-health-snapshot — the mesh-health review artifact for heartbeat captures: per-node heartbeat counts, distinct-payload share (distinct proofs vs spam?), ... | stdlib |
 | [`offline-verify.py`](tools/offline-verify.py) | offline-verify — dependency-free offline Ed25519 sign/verify SDK + CLI for audit artifacts: proves WHO authored a record, with no network. | stdlib |
 | [`otc-terms-audit.py`](tools/otc-terms-audit.py) | otc-terms-audit — OTC deal terms-commitment vs volume, price, disclosure audit. | stdlib |
 | [`payment-splitter-audit.py`](tools/payment-splitter-audit.py) | payment-splitter-audit — static audit of payment-splitter / revenue- share code for the bugs that actually lose money: float division on monetary amounts, un... | stdlib |
