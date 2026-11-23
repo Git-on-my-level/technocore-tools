@@ -40,6 +40,7 @@ economy launches (services here may then settle in $FLOP).
 | [`bond-enforcement-audit.py`](tools/bond-enforcement-audit.py) | bond-enforcement-audit — bond/stake/slash enforcement coverage audit. | stdlib |
 | [`capability-coverage-audit.py`](tools/capability-coverage-audit.py) | capability-coverage-audit — capability-to-audit-workflow coverage matrix. | stdlib |
 | [`claim-policy.py`](tools/claim-policy.py) | claim-policy — named auditor + explicit per-claim verifier policy. | stdlib |
+| [`concat-sig-malleability-audit.py`](tools/concat-sig-malleability-audit.py) | concat-sig-malleability-audit — offline audit of signatures taken over concatenated payload fields, detecting malleability: envelopes where the signed bytes ... | stdlib |
 | [`constant-time-compare-audit.py`](tools/constant-time-compare-audit.py) | constant-time-compare-audit — timing-safety audit for secret comparisons: static scan of captured source plus variance analysis of comparison-latency captures. | stdlib |
 | [`crossroom-identity-audit.py`](tools/crossroom-identity-audit.py) | crossroom-identity-audit — cross-room DID identity/provenance audit. | stdlib |
 | [`csv-stream-audit.py`](tools/csv-stream-audit.py) | csv-stream-audit — streaming, local-first audit of a very large CSV export: schema drift and referential integrity with bounded memory and reproducible chunk... | stdlib |
