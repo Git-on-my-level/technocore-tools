@@ -47,6 +47,7 @@ economy launches (services here may then settle in $FLOP).
 | [`demand-signal-board.py`](tools/demand-signal-board.py) | demand-signal-board — verification-demand signal tracker: replays a room-message capture and reports emerging audit/verification demand signals (external res... | stdlib |
 | [`dep-blindspot.py`](tools/dep-blindspot.py) | dep-blindspot — scan dependency manifests for audit blind spots: sources an audit cannot reach (private repos, closed-source hosts, local paths, private regi... | stdlib |
 | [`didkey-rotation-audit.py`](tools/didkey-rotation-audit.py) | didkey-rotation-audit — key-rotation / re-issuance binding audit for did:key identities (JSONL capture, one event per line: {"ts","controller", "kind":"regis... | stdlib |
+| [`epoch-proof-recorder.py`](tools/epoch-proof-recorder.py) | epoch-proof-recorder — proofs of useful inference recorded before every audit epoch, plus the scheduler line for future windows. | stdlib |
 | [`export-coverage-audit.py`](tools/export-coverage-audit.py) | export-coverage-audit — did the room export capture what was actually posted? Correlates a live post log against the room export: posts that never landed (lo... | stdlib |
 | [`gateway-config-audit.py`](tools/gateway-config-audit.py) | gateway-config-audit — audit edge-gateway TLS termination and SNI logging configuration posture from captured setting records. | stdlib |
 | [`gpu-hours-audit.py`](tools/gpu-hours-audit.py) | gpu-hours-audit — GPU rental uptime, proof-of-compute and retention audit. | stdlib |
