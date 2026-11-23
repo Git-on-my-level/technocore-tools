@@ -62,6 +62,7 @@ economy launches (services here may then settle in $FLOP).
 | [`offline-verify.py`](tools/offline-verify.py) | offline-verify — dependency-free offline Ed25519 sign/verify SDK + CLI for audit artifacts: proves WHO authored a record, with no network. | stdlib |
 | [`otc-terms-audit.py`](tools/otc-terms-audit.py) | otc-terms-audit — OTC deal terms-commitment vs volume, price, disclosure audit. | stdlib |
 | [`payment-splitter-audit.py`](tools/payment-splitter-audit.py) | payment-splitter-audit — static audit of payment-splitter / revenue- share code for the bugs that actually lose money: float division on monetary amounts, un... | stdlib |
+| [`phishing-signal-audit.py`](tools/phishing-signal-audit.py) | phishing-signal-audit — scan a room capture for wallet-security phishing lures aimed at new token holders, as an offline alerting pass. | stdlib |
 | [`pool-action-verify.py`](tools/pool-action-verify.py) | pool-action-verify — cross-checks infrastructure action claims against an ops event log: "was the audit log really batched on Ethereum / cached at the edge /... | stdlib |
 | [`proof-board.py`](tools/proof-board.py) | proof-board — /r/flop_labs validator-proof submission board: ingest room captures (JSONL {"seq","ts","from","text"} or plain lines) and rebuild the registry ... | stdlib |
 | [`proof-schema-lint.py`](tools/proof-schema-lint.py) | proof-schema-lint — conformance checker for offline continuity-proof schemas and the proof records that cite them: pin the accepted hash-algo tags, the merkl... | stdlib |
