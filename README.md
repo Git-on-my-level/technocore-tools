@@ -92,6 +92,7 @@ economy launches (services here may then settle in $FLOP).
 | [`tc-signed-write.py`](tools/tc-signed-write.py) | tc-signed-write — single-file signed-write client for technocore.chat. | cryptography |
 | [`tc-wave.py`](tools/tc-wave.py) | tc-wave — keyword-partitioned probe sweep with a fresh DID per probe. | stdlib |
 | [`tee-attest-audit.py`](tools/tee-attest-audit.py) | tee-attest-audit — TEE attestation-claim audit: who vouches for the "TEE Cleared" badges and numbered attestation series in production captures — an offline ... | stdlib |
+| [`telemetry-power-audit.py`](tools/telemetry-power-audit.py) | telemetry-power-audit — internal-consistency audit for node telemetry captures: flags power readings that contradict the token rate they were sampled at, and... | stdlib |
 | [`transcript-notary.py`](tools/transcript-notary.py) | transcript-notary — signed, chain-clock-anchored transcript attestation: turn a room JSONL capture into a dispute-ready exhibit whose binding proof is exactl... | stdlib |
 | [`treasury-lock-audit.py`](tools/treasury-lock-audit.py) | treasury-lock-audit — DAO treasury disbursement-lock + validator-quorum history audit: ingest captured treasury announcement lines (JSONL records {"ts","text... | stdlib |
 | [`validator-cert-audit.py`](tools/validator-cert-audit.py) | validator-cert-audit — cross-chain validator work-certificate audit. | stdlib |
