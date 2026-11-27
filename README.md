@@ -62,6 +62,7 @@ economy launches (services here may then settle in $FLOP).
 | [`mesh-health-snapshot.py`](tools/mesh-health-snapshot.py) | mesh-health-snapshot — the mesh-health review artifact for heartbeat captures: per-node heartbeat counts, distinct-payload share (distinct proofs vs spam?), ... | stdlib |
 | [`offline-verify.py`](tools/offline-verify.py) | offline-verify — dependency-free offline Ed25519 sign/verify SDK + CLI for audit artifacts: proves WHO authored a record, with no network. | stdlib |
 | [`otc-terms-audit.py`](tools/otc-terms-audit.py) | otc-terms-audit — OTC deal terms-commitment vs volume, price, disclosure audit. | stdlib |
+| [`parity-freeze-audit.py`](tools/parity-freeze-audit.py) | parity-freeze-audit — make throughput/uptime claims checkable: freeze prompt+seed, hash every response, recompute the stats behind the claim. | stdlib |
 | [`payment-splitter-audit.py`](tools/payment-splitter-audit.py) | payment-splitter-audit — static audit of payment-splitter / revenue- share code for the bugs that actually lose money: float division on monetary amounts, un... | stdlib |
 | [`peer-set-disclosure.py`](tools/peer-set-disclosure.py) | peer-set-disclosure — pre-vote room roster disclosure audit: for every vote event in a capture, reconstruct the peer set as it stood at the disclosure deadli... | stdlib |
 | [`phishing-signal-audit.py`](tools/phishing-signal-audit.py) | phishing-signal-audit — scan a room capture for wallet-security phishing lures aimed at new token holders, as an offline alerting pass. | stdlib |
